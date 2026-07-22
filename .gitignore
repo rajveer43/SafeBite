@@ -1,0 +1,72 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+.env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyi
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.whl
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend build output
+frontend-SB/dist/
+frontend-SB/dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Alembic / DB
+*.db
+*.sqlite3
+
+# Uploaded files
+backend-SB/uploads/
+
+# AI agent
+.agents/
+.kombai/
