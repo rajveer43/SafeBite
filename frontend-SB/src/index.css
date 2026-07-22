@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/*
+  SafeBite design system — "Inspection Record"
+  Signature: the ink-stamped grade seal (see .stamp-ring, SafetyScoreBadge)
+  echoes the real paper grade card taped in a restaurant window.
+*/
+@theme {
+  /* Seal green — the inspector's approval ink, deeper & less "SaaS" than a stock emerald */
+  --color-primary-50: #f2f7ef;
+  --color-primary-100: #e1ecda;
+  --color-primary-200: #c2d9b6;
+  --color-primary-300: #9cbf89;
+  --color-primary-400: #729d61;
+  --color-primary-500: #4f7d42;
+  --color-primary-600: #386131;
+  --color-primary-700: #2c4d27;
+  --color-primary-800: #243e21;
+  --color-primary-900: #1d331b;
+  --color-primary-950: #0f1c0e;
+  --color-primary: #386131;
+  --color-primary-light: #4f7d42;
+  --color-primary-dark: #2c4d27;
+
+  /* Paper — cool sage-white record stock, not the templated warm cream */
+  --color-surface: #ffffff;
+  --color-background: #f3f5ee;
+  --color-muted: #eaeee2;
+  --color-border: #dbe0d1;
+
+  /* Ink */
+  --color-text: #1c2318;
+  --color-text-secondary: #5b6350;
+  --color-text-muted: #8b9280;
+
+  /* Grade amber — the "B" rating */
+  --color-amber-50: #fbf5e8;
+  --color-amber-100: #f4e6bf;
+  --color-amber-500: #c89530;
+  --color-amber-600: #a97a20;
+  --color-amber: #c89530;
+
+  /* Stamp red — the "C" / violation ink */
+  --color-red-50: #faf0ee;
+  --color-red-100: #f0d5cf;
+  --color-red-500: #b23a2e;
+  --color-red-600: #963025;
+  --color-red: #b23a2e;
+
+  /* Filing-stamp navy — sparing secondary accent */
+  --color-blue-50: #eef2f6;
+  --color-blue-500: #3a5a78;
+  --color-blue: #3a5a78;
+
+  /* Typefaces */
+  --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Big Shoulders Display', 'Public Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Subtly styled custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Premium Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.04), 0 4px 12px -4px rgba(0, 0, 0, 0.02);
+}
+
+/* Premium Shadows */
+.shadow-premium {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-premium-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shadow-premium-hover:hover {
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.06), 0 4px 12px -4px rgba(0, 0, 0, 0.03);
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+/* Typography Gradient utility */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #0f172a 30%, #1e293b 80%);
+}
+
+.text-gradient-primary {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #386131 0%, #1d331b 100%);
+}
+
+/* ── Inspection-record signature elements ── */
+
+/* Distressed ink-stamp ring, used by the grade seal */
+.stamp-ring {
+  box-shadow:
+    0 0 0 2px currentColor,
+    0 0 0 5px var(--color-surface),
+    0 0 0 6.5px currentColor;
+}
+
+/* Perforated / tear-off edge, like the bottom of a certificate */
+.perforated-top {
+  background-image: radial-gradient(circle, var(--color-background) 3px, transparent 3.5px);
+  background-size: 16px 16px;
+  background-position: top center;
+  background-repeat: repeat-x;
+  background-color: transparent;
+}
+
+/* Ruled ledger row divider */
+.ledger-row {
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.ledger-row:last-child {
+  border-bottom: none;
+}
+
+/* Faint lined-paper backdrop for record-styled panels */
+.bg-ledger-lines {
+  background-image: repeating-linear-gradient(to bottom,
+      transparent,
+      transparent 27px,
+      var(--color-border) 27px,
+      var(--color-border) 28px);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
