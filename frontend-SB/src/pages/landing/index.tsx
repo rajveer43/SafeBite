@@ -497,7 +497,7 @@ export default function LandingPage() {
       {/* ────────────────────────────────────────────
           HOW IT WORKS
       ──────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 60px", background: "transparent", textAlign: "center", zIndex: 1 }}>
+      <section id="how-it-works" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", paddingTop: 88, paddingBottom: 60, background: "transparent", textAlign: "center", zIndex: 1 }}>
         <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
             <SectionHeader
@@ -513,8 +513,20 @@ export default function LandingPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
-            className="mx-auto grid gap-6 md:grid-cols-3 w-full justify-items-center"
+            className="relative mx-auto grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8 w-full justify-items-center"
           >
+            {/* Connecting path — desktop only */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              style={{ transformOrigin: "left" }}
+              className="pointer-events-none absolute top-[64px] left-[16.5%] right-[16.5%] hidden h-px md:block"
+            >
+              <div className="h-px w-full bg-gradient-to-r from-emerald-300 via-emerald-400 to-emerald-300" style={{ backgroundImage: "repeating-linear-gradient(to right, #6ee7b7 0, #6ee7b7 6px, transparent 6px, transparent 14px)" }} />
+            </motion.div>
+
             {steps.map((step, i) => (
               <motion.div
                 key={step.number}
@@ -522,22 +534,17 @@ export default function LandingPage() {
                 custom={i + 1}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="group bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 flex flex-col items-center text-center w-full max-w-sm"
+                className="group relative overflow-hidden bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:pt-8 sm:px-7 sm:pb-7 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 flex flex-col items-center justify-center text-center w-full max-w-sm h-full min-h-[260px]"
               >
-                <div className="relative mb-5">
-                  <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 group-hover:scale-105 transition-transform duration-300">
-                    <step.icon size={26} className="text-white" />
-                  </div>
-                  <motion.span
-                    animate={{ y: [-2, 2, -2] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-3 -right-3 text-3xl font-black text-slate-900 select-none leading-none tracking-tighter"
-                  >
-                    {step.number}
-                  </motion.span>
+                <span className="pointer-events-none absolute top-1 left-2 text-[6.5rem] font-black text-emerald-900/[0.04] select-none leading-none tracking-tighter">
+                  {step.number}
+                </span>
+                <div className="relative z-10 mb-4 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 group-hover:scale-105 transition-transform duration-300" style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)" }}>
+                  <step.icon size={26} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2.5 text-center">{step.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed text-center">{step.description}</p>
+                <span className="relative z-10 mb-1.5 text-xs font-bold uppercase tracking-widest text-emerald-600">Step {step.number}</span>
+                <h3 className="relative z-10 text-lg font-bold text-slate-900 mb-2.5 text-center">{step.title}</h3>
+                <p className="relative z-10 text-sm text-slate-500 leading-[1.6] text-center max-w-[280px] mx-auto">{step.description}</p>
               </motion.div>
             ))}
           </motion.div>
