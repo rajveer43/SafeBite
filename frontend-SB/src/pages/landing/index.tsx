@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { motion, type Variants } from "motion/react";
 import {
-  Shield, ShieldCheck, Brain, MessageSquareWarning, FileCheck,
-  Search, Bell, BadgeCheck, ArrowRight, Star,
+  Shield, ShieldCheck, Brain, BadgeCheck, ArrowRight, Star,
   Menu, X, MapPin, Utensils, Users, TrendingUp,
   ChevronRight, Heart, Zap, Check, Quote,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useInView } from "motion/react";
 import { cn } from "@/lib/utils";
+import { FeatureSection } from "./components/features/FeatureSection";
 
 /* ─── Animated Counter Component ─── */
 function AnimatedCounter({ value }: { value: string }) {
@@ -70,15 +70,6 @@ const stagger: Variants = {
 };
 
 /* ─── Data ─── */
-const features = [
-  { icon: Brain, title: "AI Safety Scores", description: "Machine learning algorithms analyze restaurant hygiene data and generate real-time safety scores." },
-  { icon: MessageSquareWarning, title: "Complaint Management", description: "Streamlined complaint filing and tracking that ensures every food safety concern is addressed promptly." },
-  { icon: FileCheck, title: "Certificate Tracking", description: "Automated tracking of food safety certificates and licenses so you never miss an expiration date." },
-  { icon: Search, title: "Real-time Inspections", description: "Live inspection updates and detailed reports give you complete visibility into restaurant compliance." },
-  { icon: Bell, title: "Smart Notifications", description: "Intelligent alerts about safety rating changes, new complaints, and important regulatory updates." },
-  { icon: BadgeCheck, title: "Verified Restaurants", description: "Only restaurants that meet our strict safety criteria earn the SafeBite Verified badge." },
-];
-
 const steps = [
   { number: "01", title: "Sign Up", icon: Zap, description: "Create your account in seconds. Whether you're a customer, restaurant owner, or health inspector — SafeBite is built for you." },
   { number: "02", title: "Get Insights", icon: TrendingUp, description: "Access real-time safety scores, inspection reports, and AI-powered analytics for any restaurant in your area." },
@@ -109,18 +100,19 @@ function SectionHeader({ tag, title, highlight, subtitle }: {
   tag: string; title: string; highlight: string; subtitle: string;
 }) {
   return (
-    <div className="mx-auto mb-10 flex w-full max-w-3xl flex-col items-center justify-center text-center">
-      <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/10 text-emerald-700 text-xs font-semibold rounded-full mb-4 border border-emerald-500/20 shadow-xs">
+    <div className="mx-auto mb-14 flex w-full max-w-[700px] flex-col items-center justify-center text-center">
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-700 shadow-xs">
         <Zap size={12} className="text-emerald-600 animate-pulse" />
         <span>{tag}</span>
       </div>
-      <h2 className="w-full text-center text-3xl sm:text-4xl lg:text-[2.6rem] font-extrabold leading-tight text-slate-900 tracking-tight">
+      <h2 className="mb-6 w-full text-center text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.6rem] leading-tight">
         {title} <span className="text-emerald-600">{highlight}</span>
       </h2>
-      <p className="mx-auto mt-3.5 max-w-xl text-center text-base sm:text-lg text-slate-500 leading-relaxed font-normal">{subtitle}</p>
+      <p className="mx-auto max-w-[700px] text-center text-base sm:text-lg text-slate-500 leading-[1.6] font-normal">{subtitle}</p>
     </div>
   );
 }
+
 
 /* ─── Main Component ─── */
 export default function LandingPage() {
@@ -128,18 +120,6 @@ export default function LandingPage() {
 
   return (
     <div className="bg-white w-full flex flex-col items-center relative" style={{ overflowX: "hidden", minHeight: "100vh" }}>
-      {/* Full-Page Continuous Grid Background */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          backgroundImage: "linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          opacity: 0.35,
-          zIndex: 0,
-        }}
-      />
 
       {/* Full-Page Ambient Soft Green Radial Glow Mesh */}
       <div
@@ -453,51 +433,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────────────────────────────────
-          FEATURES
-      ──────────────────────────────────────────── */}
-      <section id="features" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 20px", background: "transparent", textAlign: "center", zIndex: 1 }}>
-        <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
-            <SectionHeader
-              tag="Features"
-              title="Everything you need for"
-              highlight="food safety"
-              subtitle="From AI-powered safety scoring to real-time inspection tracking, SafeBite provides a complete ecosystem for food safety management."
-            />
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            variants={stagger}
-            className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 justify-items-center"
-          >
-            {features.map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                variants={fadeUp}
-                custom={i + 1}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="group flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-8 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
-              >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 group-hover:bg-emerald-600 transition-colors duration-300 group-hover:scale-110">
-                  <feature.icon size={26} className="text-emerald-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2.5 text-center">{feature.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed flex-1 text-center">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      <FeatureSection />
 
       {/* ────────────────────────────────────────────
           HOW IT WORKS
       ──────────────────────────────────────────── */}
-      <section id="how-it-works" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 60px", background: "transparent", textAlign: "center", zIndex: 1 }}>
+      <section id="how-it-works" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", paddingTop: 88, paddingBottom: 60, background: "transparent", textAlign: "center", zIndex: 1 }}>
         <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
             <SectionHeader
@@ -513,8 +454,20 @@ export default function LandingPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
-            className="mx-auto grid gap-6 md:grid-cols-3 w-full justify-items-center"
+            className="relative mx-auto grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8 w-full justify-items-center"
           >
+            {/* Connecting path — desktop only */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              style={{ transformOrigin: "left" }}
+              className="pointer-events-none absolute top-[64px] left-[16.5%] right-[16.5%] hidden h-px md:block"
+            >
+              <div className="h-px w-full bg-gradient-to-r from-emerald-300 via-emerald-400 to-emerald-300" style={{ backgroundImage: "repeating-linear-gradient(to right, #6ee7b7 0, #6ee7b7 6px, transparent 6px, transparent 14px)" }} />
+            </motion.div>
+
             {steps.map((step, i) => (
               <motion.div
                 key={step.number}
@@ -522,22 +475,17 @@ export default function LandingPage() {
                 custom={i + 1}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="group bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 flex flex-col items-center text-center w-full max-w-sm"
+                className="group relative overflow-hidden bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:pt-8 sm:px-7 sm:pb-7 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 flex flex-col items-center justify-center text-center w-full max-w-sm h-full min-h-[260px]"
               >
-                <div className="relative mb-5">
-                  <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 group-hover:scale-105 transition-transform duration-300">
-                    <step.icon size={26} className="text-white" />
-                  </div>
-                  <motion.span
-                    animate={{ y: [-2, 2, -2] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-3 -right-3 text-3xl font-black text-slate-900 select-none leading-none tracking-tighter"
-                  >
-                    {step.number}
-                  </motion.span>
+                <span className="pointer-events-none absolute top-1 left-2 text-[6.5rem] font-black text-emerald-900/[0.04] select-none leading-none tracking-tighter">
+                  {step.number}
+                </span>
+                <div className="relative z-10 mb-4 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 group-hover:scale-105 transition-transform duration-300" style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)" }}>
+                  <step.icon size={26} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2.5 text-center">{step.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed text-center">{step.description}</p>
+                <span className="relative z-10 mb-1.5 text-xs font-bold uppercase tracking-widest text-emerald-600">Step {step.number}</span>
+                <h3 className="relative z-10 text-lg font-bold text-slate-900 mb-2.5 text-center">{step.title}</h3>
+                <p className="relative z-10 text-sm text-slate-500 leading-[1.6] text-center max-w-[280px] mx-auto">{step.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -547,12 +495,12 @@ export default function LandingPage() {
       {/* ────────────────────────────────────────────
           STATS — Balanced Dark Emerald Banner Centered
       ──────────────────────────────────────────── */}
-      <section id="statistics" className="w-full flex flex-col items-center py-10 bg-transparent relative z-10">
+      <section id="statistics" className="w-full flex flex-col items-center pt-[72px] pb-24 bg-transparent relative z-10">
         <div className="w-full max-w-5xl mx-auto px-6 flex flex-col items-center relative">
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
             variants={fadeUp} custom={0}
-            className="w-full relative overflow-hidden rounded-3xl py-16 px-6 sm:py-20 sm:px-12 text-center shadow-xl flex flex-col items-center justify-center border border-emerald-900/30"
+            className="w-full relative overflow-hidden rounded-3xl py-12 sm:py-14 px-6 sm:px-12 lg:px-16 text-center shadow-xl flex flex-col items-center justify-center border border-emerald-900/30"
             style={{
               background: "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f172a 100%)",
               boxShadow: "0 16px 40px rgba(6, 78, 59, 0.3)",
@@ -575,15 +523,15 @@ export default function LandingPage() {
                 <Zap size={12} className="text-emerald-400 animate-pulse" />
                 <span>Statistics</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">
                 Trusted by thousands <span className="text-emerald-300">across the country</span>
               </h2>
-              <p className="text-sm sm:text-base text-emerald-100/90 mb-10 max-w-lg mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base text-emerald-100/90 mb-8 max-w-lg mx-auto leading-relaxed">
                 Our growing network of restaurants, consumers, and health inspectors is making food safer every day.
               </p>
 
               <motion.div
-                variants={stagger} className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 w-full justify-items-center"
+                variants={stagger} className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4 lg:gap-6 w-full justify-items-center items-stretch"
               >
                 {stats.map((stat, i) => (
                   <motion.div
@@ -593,11 +541,11 @@ export default function LandingPage() {
                     className="rounded-2xl p-6 text-center w-full max-w-xs border border-white/15 backdrop-blur-md shadow-md transition-all duration-300 flex flex-col items-center justify-center"
                     style={{ background: "rgba(255, 255, 255, 0.08)" }}
                   >
-                    <stat.icon size={26} className={cn("mx-auto mb-3", stat.color)} />
-                    <p className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">
+                    <stat.icon size={26} className={cn("mx-auto mb-3 mt-1", stat.color)} />
+                    <p className="text-3xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight">
                       <AnimatedCounter value={stat.value} />
                     </p>
-                    <p className="text-[11px] sm:text-xs text-emerald-200/90 font-semibold uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-[11px] sm:text-xs text-emerald-200/90 font-semibold uppercase tracking-widest">{stat.label}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -606,10 +554,11 @@ export default function LandingPage() {
         </div>
       </section>
 
+
       {/* ────────────────────────────────────────────
           TESTIMONIALS
       ──────────────────────────────────────────── */}
-      <section id="testimonials" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 20px", background: "transparent", textAlign: "center", zIndex: 1 }}>
+      <section id="testimonials" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "56px 0 56px", background: "transparent", textAlign: "center", zIndex: 1 }}>
         <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
             <SectionHeader
@@ -622,33 +571,40 @@ export default function LandingPage() {
 
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
-            variants={stagger} className="mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full justify-items-center"
+            variants={stagger} className="mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full items-stretch"
           >
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name} variants={fadeUp} custom={i + 1}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-8 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
-              >
-                <Quote size={26} className="text-emerald-500/40 mb-3.5" />
-                <div className="flex gap-1 mb-4 justify-center">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5 text-center">"{t.text}"</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100 mt-auto w-full justify-center">
-                  <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-xs", t.color)}>
-                    <span className="text-xs font-bold text-white">{t.avatar}</span>
+            {testimonials.map((t, i) => {
+              return (
+                <motion.div
+                  key={t.name} variants={fadeUp} custom={i + 1}
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl p-8 shadow-xs backdrop-blur-sm transition-all duration-300 hover:shadow-xl items-center text-center border border-emerald-100/80 hover:border-emerald-300/80"
+                  style={{
+                    background: "rgba(5,150,105,0.04)",
+                  }}
+                >
+                  <Quote size={26} className="text-emerald-500/40 mb-3.5" />
+                  <div className="flex gap-1 mb-4 justify-center">
+                    {Array.from({ length: t.rating }).map((_, j) => (
+                      <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
+                    ))}
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{t.role}</p>
+                  <p className="text-slate-600 leading-relaxed flex-1 mb-5 text-center text-sm">
+                    "{t.text}"
+                  </p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-emerald-900/10 mt-auto w-full justify-center">
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-xs ring-2 ring-white", t.color)}>
+                      <span className="text-xs font-bold text-white">{t.avatar}</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-slate-900">{t.name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{t.role}</p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -672,49 +628,69 @@ export default function LandingPage() {
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
             variants={fadeUp} custom={0}
-            className="w-full relative overflow-hidden rounded-3xl text-center shadow-xl flex flex-col items-center justify-center border border-emerald-900/30"
+            className="w-full relative overflow-hidden rounded-3xl grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-12 px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 border border-emerald-500/20 shadow-[0_20px_50px_rgba(6,78,59,0.35)]"
             style={{
-              padding: "48px 32px",
-              background: "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f172a 100%)",
-              boxShadow: "0 16px 40px rgba(6, 78, 59, 0.35)",
+              background: "linear-gradient(135deg, #022c22 0%, #064e3b 55%, #0f172a 100%)",
             }}
           >
-            {/* Animated background glow orbs */}
-            <motion.div
-              animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"
-            />
-            <motion.div
-              animate={{ scale: [1.2, 1, 1.2], opacity: [0.15, 0.3, 0.15] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"
+            {/* Directional light sweep — self-clipped to the banner's rounded corners so it never clips the content */}
+            <div
+              className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl"
+              style={{ background: "linear-gradient(115deg, transparent 40%, rgba(16,185,129,0.14) 55%, transparent 70%)" }}
             />
 
-            <div className="relative w-full max-w-lg mx-auto flex flex-col items-center justify-center text-center">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full mb-4 border border-emerald-400/20 backdrop-blur-sm shadow-xs">
+            {/* Copy + CTAs */}
+            <div className="relative col-span-1 lg:col-span-7 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 backdrop-blur-md shadow-xs mb-5">
                 <Zap size={12} className="text-emerald-400 animate-pulse" />
                 <span>Get Started</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
-                Ready to make food <span className="text-emerald-300">safer?</span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15] mb-4">
+                Ready to make food <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">safer?</span>
               </h2>
-              <p className="text-xs sm:text-sm text-emerald-100/90 mb-7 leading-relaxed max-w-md mx-auto">
+              <p className="text-sm sm:text-base text-emerald-100/80 leading-relaxed max-w-xl mb-8">
                 Join thousands of consumers, restaurants, and health inspectors who trust SafeBite to keep every meal safe.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto">
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="w-full sm:w-auto">
                   <Link to="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-emerald-500/30 text-decoration-none">
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-200 text-decoration-none">
                     Get Started Free <ArrowRight size={16} />
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="w-full sm:w-auto">
                   <Link to="/customer/restaurants"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 bg-white/10 hover:bg-white/15 text-white font-semibold text-sm rounded-xl border border-white/20 transition-all backdrop-blur-sm text-decoration-none">
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 text-white font-semibold text-sm rounded-xl border border-white/20 hover:border-white/30 backdrop-blur-md transition-all duration-200 text-decoration-none">
                     Explore Restaurants <ChevronRight size={16} />
                   </Link>
                 </motion.div>
+              </div>
+            </div>
+
+            {/* Trust visual — sets this apart from Stats' metric-grid layout */}
+            <div className="relative col-span-1 lg:col-span-5 flex items-center justify-center lg:justify-end">
+              <div className="w-full max-w-[260px] sm:max-w-[280px] rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-xl p-6 shadow-xl relative overflow-hidden">
+                {/* Ambient glow behind the badge header */}
+                <div className="pointer-events-none absolute -top-10 -left-6 w-32 h-32 rounded-full bg-emerald-400/20 blur-2xl" />
+                <div className="relative flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-900/40 shrink-0">
+                    <BadgeCheck size={20} className="text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-base font-bold text-white leading-snug">SafeBite Verified</p>
+                    <p className="text-xs font-medium text-emerald-200/70">Trust badge</p>
+                  </div>
+                </div>
+                <div className="relative mt-5 space-y-3 pt-4 border-t border-white/10">
+                  {["No credit card", "Free to start", "Cancel anytime"].map((t) => (
+                    <div key={t} className="flex items-center gap-2.5 text-xs font-medium text-emerald-100">
+                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                        <Check size={11} className="text-emerald-400" />
+                      </span>
+                      {t}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -722,60 +698,113 @@ export default function LandingPage() {
       </section>
 
       {/* ────────────────────────────────────────────
-          FOOTER — Sleek Theme Matching Alignment & High Contrast
+          FOOTER — Balanced Spacing, Alignment & Premium Contrast
       ──────────────────────────────────────────── */}
-      <footer style={{ width: "100%", background: "#051310", borderTop: "1px solid rgba(5, 150, 105, 0.2)", color: "#cbd5e1", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "64px 24px 48px" }}>
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-5 mb-14">
-            <div className="lg:col-span-2 max-w-sm text-left">
-              <Link to="/" className="inline-flex items-center gap-2.5 mb-5 text-decoration-none">
-                <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md">
-                  <ShieldCheck size={18} className="text-white" />
+      <footer style={{ width: "100%", background: "#030f0c", borderTop: "1px solid rgba(5, 150, 105, 0.2)", color: "#cbd5e1", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ width: "100%", maxWidth: 1152, margin: "0 auto", padding: "72px 32px 48px" }}>
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-12 mb-16">
+            
+            {/* Brand Column — 5 out of 12 cols */}
+            <div className="lg:col-span-5 text-left pr-0 lg:pr-8">
+              <Link to="/" className="inline-flex items-center gap-2.5 mb-4 text-decoration-none">
+                <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-md shadow-emerald-900/30">
+                  <ShieldCheck size={19} className="text-white" />
                 </div>
-                <span className="text-lg font-bold text-white tracking-tight">
+                <span className="text-xl font-bold text-white tracking-tight">
                   Safe<span className="text-emerald-400">Bite</span>
                 </span>
               </Link>
-              <p className="text-sm leading-relaxed text-slate-300 mb-6">
+              <p className="text-sm leading-relaxed text-slate-300 mb-6 max-w-sm">
                 AI-powered food safety platform protecting consumers, empowering restaurants, and supporting health inspectors nationwide.
               </p>
-              <div className="flex gap-2.5">
-                {["T", "L", "G"].map((s, i) => (
-                  <a key={i} href="#"
-                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-decoration-none"
-                    style={{ background: "rgba(255, 255, 255, 0.08)", color: "#e2e8f0" }}
-                    aria-label={["Twitter", "LinkedIn", "GitHub"][i]}>
-                    <span className="text-xs font-semibold">{s}</span>
+              
+              {/* Social icons */}
+              <div className="flex gap-3">
+                {[
+                  { label: "Twitter", icon: "X" },
+                  { label: "LinkedIn", icon: "in" },
+                  { label: "GitHub", icon: "git" },
+                ].map((s) => (
+                  <a
+                    key={s.label}
+                    href="#"
+                    aria-label={s.label}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-semibold border border-white/10 bg-white/[0.05] text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/15 hover:border-emerald-500/30 transition-all duration-200 text-decoration-none"
+                  >
+                    {s.icon}
                   </a>
                 ))}
               </div>
             </div>
 
-            {[
-              { heading: "Product", links: [{ label: "Features", href: "#features" }, { label: "How It Works", href: "#how-it-works" }, { label: "Restaurants", href: "/customer/restaurants" }, { label: "Testimonials", href: "#testimonials" }] },
-              { heading: "Company", links: [{ label: "About Us", href: "#" }, { label: "Careers", href: "#" }, { label: "Blog", href: "#" }, { label: "Press", href: "#" }] },
-              { heading: "Legal", links: [{ label: "Privacy Policy", href: "#" }, { label: "Terms of Service", href: "#" }, { label: "Cookie Policy", href: "#" }, { label: "Contact Us", href: "#" }] },
-            ].map((col) => (
-              <div key={col.heading} className="text-left">
-                <h4 className="text-emerald-300 font-bold uppercase text-xs tracking-wider mb-4">{col.heading}</h4>
-                <ul className="space-y-3 text-sm">
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      {l.href.startsWith("/") ? (
-                        <Link to={l.href} className="text-slate-300 hover:text-emerald-400 transition-colors text-decoration-none">{l.label}</Link>
-                      ) : (
-                        <a href={l.href} className="text-slate-300 hover:text-emerald-400 transition-colors text-decoration-none">{l.label}</a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Navigation Columns — 7 out of 12 cols (2 + 2 + 3) */}
+            <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+              {[
+                {
+                  heading: "Product",
+                  links: [
+                    { label: "Features", href: "#features" },
+                    { label: "How It Works", href: "#how-it-works" },
+                    { label: "Restaurants", href: "/customer/restaurants" },
+                    { label: "Testimonials", href: "#testimonials" },
+                  ],
+                },
+                {
+                  heading: "Company",
+                  links: [
+                    { label: "About Us", href: "#" },
+                    { label: "Careers", href: "#" },
+                    { label: "Blog", href: "#" },
+                    { label: "Press", href: "#" },
+                  ],
+                },
+                {
+                  heading: "Legal",
+                  links: [
+                    { label: "Privacy Policy", href: "#" },
+                    { label: "Terms of Service", href: "#" },
+                    { label: "Cookie Policy", href: "#" },
+                    { label: "Contact Us", href: "#" },
+                  ],
+                },
+              ].map((col) => (
+                <div key={col.heading} className="text-left">
+                  <h4 className="text-emerald-400 font-bold uppercase text-[11px] tracking-widest mb-4">
+                    {col.heading}
+                  </h4>
+                  <ul className="space-y-3.5 text-sm p-0 m-0 list-none">
+                    {col.links.map((l) => (
+                      <li key={l.label}>
+                        {l.href.startsWith("/") ? (
+                          <Link
+                            to={l.href}
+                            className="text-slate-300 hover:text-emerald-300 transition-colors duration-200 text-decoration-none inline-block hover:translate-x-0.5 transform"
+                          >
+                            {l.label}
+                          </Link>
+                        ) : (
+                          <a
+                            href={l.href}
+                            className="text-slate-300 hover:text-emerald-300 transition-colors duration-200 text-decoration-none inline-block hover:translate-x-0.5 transform"
+                          >
+                            {l.label}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
           </div>
 
-          <div className="pt-8 border-t border-emerald-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          {/* Copyright Bottom Bar */}
+          <div className="pt-8 border-t border-emerald-900/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
             <p>© {new Date().getFullYear()} SafeBite. All rights reserved.</p>
-            <p>Made with ♥ for food safety</p>
+            <p className="flex items-center gap-1">
+              Made with <Heart size={12} className="text-emerald-500 fill-emerald-500" /> for food safety
+            </p>
           </div>
         </div>
       </footer>
