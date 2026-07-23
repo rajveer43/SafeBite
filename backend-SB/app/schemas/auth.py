@@ -14,21 +14,25 @@ from app.enums.user_role import UserRole
 
 
 class UserRegister(BaseModel):
-    name: str = Field(
-        min_length=2,
-        max_length=100
-    )
+    name: str = Field(min_length=2, max_length=100)
 
     email: EmailStr
 
-    password: str = Field(
-        min_length=8,
-        max_length=100
-    )
+    password: str = Field(min_length=8, max_length=100)
 
     phone_number: str
 
-    role: UserRole
+    # Public signup may only create CUSTOMER or OWNER accounts.
+    # INSPECTOR/ADMIN accounts must be provisioned by an admin, never
+    # self-assigned via this unauthenticated endpoint.
+    role: UserRole = UserRole.CUSTOMER
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: UserRole) -> UserRole:
+        if value not in (UserRole.CUSTOMER, UserRole.OWNER):
+            raise ValueError("Role must be either 'customer' or 'owner'.")
+        return value
 
     @field_validator("phone_number")
     @classmethod
@@ -40,36 +44,27 @@ class UserRegister(BaseModel):
                 raise ValueError
 
             return phonenumbers.format_number(
-                number,
-                phonenumbers.PhoneNumberFormat.E164
+                number, phonenumbers.PhoneNumberFormat.E164
             )
 
         except Exception:
             raise ValueError("Invalid phone number")
-        
+
     @field_validator("password")
     @classmethod
     def validate_password(cls, value: str):
 
         if len(value) < 8:
-            raise ValueError(
-            "Password must be at least 8 characters."
-        )
+            raise ValueError("Password must be at least 8 characters.")
 
         if not any(c.isupper() for c in value):
-            raise ValueError(
-            "Password must contain one uppercase letter."
-        )
+            raise ValueError("Password must contain one uppercase letter.")
 
         if not any(c.islower() for c in value):
-            raise ValueError(
-            "Password must contain one lowercase letter."
-        )
+            raise ValueError("Password must contain one lowercase letter.")
 
         if not any(c.isdigit() for c in value):
-            raise ValueError(
-            "Password must contain one number."
-        )
+            raise ValueError("Password must contain one number.")
 
         return value
 
@@ -103,6 +98,4 @@ class UserResponse(BaseModel):
 
     updated_at: datetime
 
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)

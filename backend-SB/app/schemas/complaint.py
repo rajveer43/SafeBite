@@ -31,6 +31,4 @@ class ComplaintResponse(BaseModel):
     updated_at: datetime
     restaurant_name: str | None = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}

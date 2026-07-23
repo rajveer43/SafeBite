@@ -47,6 +47,7 @@ def create_complaint(
             detail=str(e),
         )
 
+
 @router.get(
     "/my",
     response_model=list[ComplaintResponse],
@@ -65,16 +66,16 @@ def get_my_complaints(
     response_model=ComplaintResponse,
 )
 def get_complaint(
-        complaint_id: UUID,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db),
-    ):
+    complaint_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     service = ComplaintService(db)
 
     try:
         return service.get_complaint(
             complaint_id,
-            current_user, 
+            current_user,
         )
 
     except ValueError as e:
@@ -82,7 +83,6 @@ def get_complaint(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
-    
 
 
 @router.get(
@@ -125,7 +125,7 @@ def update_complaint(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
-    
+
     except PermissionError as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

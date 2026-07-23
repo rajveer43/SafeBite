@@ -29,9 +29,7 @@ def calculate_score(
 
     service = SafetyScoreService(db)
 
-    return service.calculate_score(
-        restaurant_id
-    )
+    return service.calculate_score(restaurant_id)
 
 
 @router.get(
@@ -45,9 +43,7 @@ def get_score(
 
     service = SafetyScoreService(db)
 
-    score = service.score_repository.get_by_restaurant(
-        restaurant_id
-    )
+    score = service.score_repository.get_by_restaurant(restaurant_id)
 
     if not score:
 

@@ -30,7 +30,9 @@ def get_inspections(
     db: Session = Depends(get_db),
 ):
     service = InspectionService(db)
-    return service.get_inspections(current_user=current_user, restaurant_id=restaurant_id)
+    return service.get_inspections(
+        current_user=current_user, restaurant_id=restaurant_id
+    )
 
 
 @router.post(
@@ -69,9 +71,7 @@ def get_inspection(
     service = InspectionService(db)
 
     try:
-        return service.get_inspection(
-            inspection_id
-        )
+        return service.get_inspection(inspection_id)
 
     except ValueError as e:
         raise HTTPException(
@@ -90,9 +90,7 @@ def get_restaurant_inspections(
 ):
     service = InspectionService(db)
 
-    return service.get_restaurant_inspections(
-        restaurant_id
-    )
+    return service.get_restaurant_inspections(restaurant_id)
 
 
 @router.put(

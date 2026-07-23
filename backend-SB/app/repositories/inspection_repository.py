@@ -36,9 +36,7 @@ class InspectionRepository:
                 joinedload(Inspection.restaurant),
                 joinedload(Inspection.inspector),
             )
-            .filter(
-                Inspection.inspection_id == inspection_id
-            )
+            .filter(Inspection.inspection_id == inspection_id)
             .first()
         )
 
@@ -53,9 +51,7 @@ class InspectionRepository:
                 joinedload(Inspection.restaurant),
                 joinedload(Inspection.inspector),
             )
-            .filter(
-                Inspection.restaurant_id == restaurant_id
-            )
+            .filter(Inspection.restaurant_id == restaurant_id)
             .order_by(Inspection.created_at.desc())
             .all()
         )
@@ -64,12 +60,9 @@ class InspectionRepository:
         self,
         inspector_id: UUID | None = None,
     ) -> list[Inspection]:
-        query = (
-            self.db.query(Inspection)
-            .options(
-                joinedload(Inspection.restaurant),
-                joinedload(Inspection.inspector),
-            )
+        query = self.db.query(Inspection).options(
+            joinedload(Inspection.restaurant),
+            joinedload(Inspection.inspector),
         )
         if inspector_id:
             query = query.filter(Inspection.inspector_id == inspector_id)

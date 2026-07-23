@@ -37,8 +37,10 @@ if project_root not in sys.path:
 # Import the Base metadata and ensure models are imported so they register
 try:
     from app.database.base import Base
+
     # import models so that they are registered on the MetaData
-    import app.models # noqa: F401
+    import app.models  # noqa: F401
+
     target_metadata = Base.metadata
 except Exception:  # pragma: no cover - fail safe for env where imports differ
     target_metadata = None
@@ -87,6 +89,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+
         def include_object(object, name, type_, reflected, compare_to):
             if type_ == "table" and name == "spatial_ref_sys":
                 return False
@@ -95,7 +98,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_object=include_object
+            include_object=include_object,
         )
 
         with context.begin_transaction():

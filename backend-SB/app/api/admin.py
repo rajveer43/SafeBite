@@ -43,19 +43,14 @@ router = APIRouter(
     response_model=AdminDashboardResponse,
 )
 def get_dashboard(
-    current_user: User = Depends(
-        require_admin
-    ),
-    db: Session = Depends(
-        get_db
-    ),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    service = AdminService(
-        db
-    )
+    service = AdminService(db)
 
     return service.get_dashboard()
+
 
 @router.get(
     "/users",
@@ -71,7 +66,9 @@ def get_users(
     from app.repositories.user_repository import UserRepository
     from app.mappers.admin_mapper import AdminMapper
 
-    users = UserRepository(db).get_all_users(search=search, role=role, page=page)
+    users = UserRepository(db).get_all_users(
+        search=search, role=role, page=page
+    )
     return [AdminMapper.recent_user(u) for u in users]
 
 
@@ -80,244 +77,122 @@ def get_users(
     response_model=list[RecentUserResponse],
 )
 def get_recent_users(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
-        AdminService(db)
-        .get_recent_users()
-    )
+    return AdminService(db).get_recent_users()
+
 
 @router.get(
     "/activity",
     response_model=list[ActivityResponse],
 )
 def get_activity(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
-        ActivityService(db)
-        .get_recent_activities()
-    )
+    return ActivityService(db).get_recent_activities()
+
 
 @router.get(
     "/recent-restaurants",
-    response_model=list[
-        RecentRestaurantResponse
-    ],
+    response_model=list[RecentRestaurantResponse],
 )
 def get_recent_restaurants(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
-        AdminService(db)
-        .get_recent_restaurants()
-    )
+    return AdminService(db).get_recent_restaurants()
+
 
 @router.get(
     "/high-risk-restaurants",
-    response_model=list[
-        HighRiskRestaurantResponse
-    ],
+    response_model=list[HighRiskRestaurantResponse],
 )
 def get_high_risk_restaurants(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
-        AdminService(db)
-        .get_high_risk_restaurants()
-    )
+    return AdminService(db).get_high_risk_restaurants()
+
 
 @router.get(
     "/pending-complaints",
-    response_model=list[
-        PendingComplaintResponse
-    ],
+    response_model=list[PendingComplaintResponse],
 )
 def get_pending_complaints(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
+    return AdminService(db).get_pending_complaints()
 
-        AdminService(db)
-        .get_pending_complaints()
-
-    )
 
 @router.get(
     "/pending-certificates",
-    response_model=list[
-        PendingCertificateResponse
-    ],
+    response_model=list[PendingCertificateResponse],
 )
 def get_pending_certificates(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
+    return AdminService(db).get_pending_certificates()
 
-        AdminService(db)
-        .get_pending_certificates()
-
-    )
 
 @router.get(
     "/expiring-certificates",
-    response_model=list[
-        ExpiringCertificateResponse
-    ],
+    response_model=list[ExpiringCertificateResponse],
 )
 def get_expiring_certificates(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
+    return AdminService(db).get_expiring_certificates()
 
-        AdminService(db)
-        .get_expiring_certificates()
-
-    )
 
 @router.get(
     "/overdue-inspections",
-    response_model=list[
-        OverdueInspectionResponse
-    ],
+    response_model=list[OverdueInspectionResponse],
 )
 def get_overdue_inspections(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
+    return AdminService(db).get_overdue_inspections()
 
-        AdminService(db)
-        .get_overdue_inspections()
-
-    )
 
 @router.get(
     "/pending-owners",
-    response_model=list[
-        PendingOwnerResponse
-    ],
+    response_model=list[PendingOwnerResponse],
 )
 def get_pending_owners(
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
+    return AdminService(db).get_pending_owners()
 
-        AdminService(db)
-        .get_pending_owners()
-
-    )
 
 @router.patch(
     "/users/{user_id}/verification-status",
 )
 def update_verification_status(
-
     user_id: UUID,
-
     verification_data: VerificationStatusUpdate,
-
-    current_user: User = Depends(
-        require_admin
-    ),
-
-    db: Session = Depends(
-        get_db
-    ),
-
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
 
-    return (
-
-        AdminService(db)
-        .update_verification_status(
-
-            user_id,
-
-            verification_data,
-
-        )
-
+    return AdminService(db).update_verification_status(
+        user_id,
+        verification_data,
     )
 
 
@@ -360,4 +235,4 @@ def assign_inspector(
         restaurant_id=restaurant_id,
         inspector_id=payload.inspector_id,
         admin_id=current_user.user_id,
-    )
+    )

@@ -50,7 +50,10 @@ class RestaurantUpdate(BaseModel):
 
 
 class RestaurantApprovalUpdate(BaseModel):
-    status: str = Field(..., description="Approval status: 'active', 'approved', 'under_review', 'rejected', 'pending'")
+    status: str = Field(
+        ...,
+        description="Approval status: 'active', 'approved', 'under_review', 'rejected', 'pending'",
+    )
     notes: str | None = None
 
 
@@ -84,7 +87,10 @@ class RestaurantResponse(BaseModel):
 
 
 class AssignInspectorRequest(BaseModel):
-    inspector_id: UUID | None = Field(None, description="User ID of the inspector to assign, or null to unassign")
+    inspector_id: UUID | None = Field(
+        None,
+        description="User ID of the inspector to assign, or null to unassign",
+    )
 
 
 class RestaurantFilter(BaseModel):
@@ -95,4 +101,4 @@ class RestaurantFilter(BaseModel):
 
     max_score: Optional[float] = None
 
-    high_risk: Optional[bool] = None
+    high_risk: Optional[bool] = None

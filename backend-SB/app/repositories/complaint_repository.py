@@ -68,9 +68,7 @@ class ComplaintRepository:
         return (
             self.db.query(Complaint)
             .options(joinedload(Complaint.restaurant))
-            .filter(
-                Complaint.complaint_id == complaint_id
-            )
+            .filter(Complaint.complaint_id == complaint_id)
             .first()
         )
 
@@ -82,13 +80,11 @@ class ComplaintRepository:
         return (
             self.db.query(Complaint)
             .options(joinedload(Complaint.restaurant))
-            .filter(
-                Complaint.restaurant_id == restaurant_id
-            )
+            .filter(Complaint.restaurant_id == restaurant_id)
             .order_by(Complaint.created_at.desc())
             .all()
         )
-    
+
     def get_customer_complaint(
         self,
         complaint_id: UUID,
@@ -103,7 +99,7 @@ class ComplaintRepository:
             )
             .first()
         )
-    
+
     def get_owner_complaint(
         self,
         complaint_id: UUID,

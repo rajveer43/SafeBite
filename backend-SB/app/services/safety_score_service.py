@@ -34,22 +34,16 @@ class SafetyScoreService:
         restaurant_id: UUID,
     ) -> SafetyScore:
 
-        inspections = (
-            self.inspection_repository.get_restaurant_inspections(
-                restaurant_id
-            )
+        inspections = self.inspection_repository.get_restaurant_inspections(
+            restaurant_id
         )
 
-        complaints = (
-            self.complaint_repository.get_restaurant_complaints(
-                restaurant_id
-            )
+        complaints = self.complaint_repository.get_restaurant_complaints(
+            restaurant_id
         )
 
-        certificates = (
-            self.certificate_repository.get_restaurant_certificates(
-                restaurant_id
-            )
+        certificates = self.certificate_repository.get_restaurant_certificates(
+            restaurant_id
         )
 
         calculator = SafetyScoreCalculator()
@@ -60,10 +54,8 @@ class SafetyScoreService:
             certificates=certificates,
         )
 
-        restaurant = (
-            self.restaurant_repository.get_restaurant_by_id(
-                restaurant_id
-            )
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            restaurant_id
         )
 
         if restaurant:
@@ -73,37 +65,21 @@ class SafetyScoreService:
                 result["final_score"],
             )
 
-        existing_score = (
-            self.score_repository.get_by_restaurant(
-                restaurant_id
-            )
-        )
+        existing_score = self.score_repository.get_by_restaurant(restaurant_id)
 
         if existing_score:
 
-            existing_score.final_score = (
-                result["final_score"]
-            )
+            existing_score.final_score = result["final_score"]
 
-            existing_score.inspection_weight = (
-                result["inspection_weight"]
-            )
+            existing_score.inspection_weight = result["inspection_weight"]
 
-            existing_score.complaint_weight = (
-                result["complaint_weight"]
-            )
+            existing_score.complaint_weight = result["complaint_weight"]
 
-            existing_score.certificate_weight = (
-                result["certificate_weight"]
-            )
+            existing_score.certificate_weight = result["certificate_weight"]
 
             existing_score.feedback_weight = 0
 
-            score = (
-                self.score_repository.update_score(
-                    existing_score
-                )
-            )
+            score = self.score_repository.update_score(existing_score)
 
         else:
 
@@ -116,31 +92,20 @@ class SafetyScoreService:
                 feedback_weight=0,
             )
 
-            score = (
-                self.score_repository.create_score(
-                    score
-                )
-            )
+            score = self.score_repository.create_score(score)
 
-        if (
-            restaurant
-            and result["final_score"] < 40
-        ):
+        if restaurant and result["final_score"] < 40:
 
             NotificationService(
                 self.score_repository.db,
             ).send(
-
                 user_id=restaurant.owner_id,
-
                 title="High Risk Restaurant",
-
                 message=(
                     f"Your restaurant safety score is "
                     f"{result['final_score']:.2f}. "
                     "Immediate corrective action is required."
                 ),
-
                 notification_type=NotificationType.ERROR,
             )
 

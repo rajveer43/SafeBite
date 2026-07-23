@@ -5,15 +5,15 @@ Revises: 4a73bc274dbf
 Create Date: 2026-07-10 17:40:37.796191
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
-revision: str = 'cb538486307b'
-down_revision: Union[str, Sequence[str], None] = '4a73bc274dbf'
+revision: str = "cb538486307b"
+down_revision: Union[str, Sequence[str], None] = "4a73bc274dbf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,7 +24,6 @@ verification_status = sa.Enum(
     "SUSPENDED",
     name="verificationstatus",
 )
-
 
 
 def upgrade():

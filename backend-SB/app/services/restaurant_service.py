@@ -13,29 +13,28 @@ from app.enums.verification_status import VerificationStatus
 from app.services.notification_service import NotificationService
 from app.enums.notification_type import NotificationType
 
+
 class RestaurantService:
     def __init__(
-            self,
-            db: Session,
+        self,
+        db: Session,
     ):
         self.restaurant_repository = RestaurantRepository(db)
         self.user_repository = UserRepository(db)
 
     def create_restaurant(
-            self,
-            owner_id: UUID,
-            restaurant_data: RestaurantCreate,
+        self,
+        owner_id: UUID,
+        restaurant_data: RestaurantCreate,
     ) -> Restaurant:
-        
-        owner = self.user_repository.get_user_by_id(
-            owner_id
-        )
+
+        owner = self.user_repository.get_user_by_id(owner_id)
 
         if owner.verification_status == VerificationStatus.REJECTED:
             raise PermissionError(
                 "Your owner account verification was rejected by an administrator."
             )
-                
+
         location = from_shape(
             Point(
                 restaurant_data.longitude,
@@ -53,103 +52,79 @@ class RestaurantService:
             status=restaurant_data.status or "pending",
         )
 
-        restaurant = self.restaurant_repository.create_restaurant(
-            restaurant
-        )
+        restaurant = self.restaurant_repository.create_restaurant(restaurant)
 
         log_activity(
-        db=self.restaurant_repository.db,
-        activity_type=ActivityType.RESTAURANT.value,
-        message=f"{restaurant.name} registered.",
-        actor_id=restaurant.owner_id,
-        entity_id=restaurant.restaurant_id,
-    )
+            db=self.restaurant_repository.db,
+            activity_type=ActivityType.RESTAURANT.value,
+            message=f"{restaurant.name} registered.",
+            actor_id=restaurant.owner_id,
+            entity_id=restaurant.restaurant_id,
+        )
 
         NotificationService(
             self.restaurant_repository.db,
         ).send(
-
             user_id=owner_id,
-
             title="Restaurant Registered",
-
             message=f"{restaurant.name} has been registered successfully.",
-
             notification_type=NotificationType.SUCCESS,
         )
 
-        return self.build_restaurant_response(
-            restaurant
-        )
-    
-            
+        return self.build_restaurant_response(restaurant)
+
     def get_all_restaurants(self):
-        restaurants = (
-            self.restaurant_repository.get_restaurants()
-        )
+        restaurants = self.restaurant_repository.get_restaurants()
 
         return [
-
-            self.build_restaurant_response(
-                restaurant
-            )
-
+            self.build_restaurant_response(restaurant)
             for restaurant in restaurants
-
         ]
-    
+
     def get_nearby_restaurants(
         self,
         latitude: float,
         longitude: float,
         radius: float,
     ):
-        restaurants = (
-            self.restaurant_repository.get_nearby_restaurants(
-                latitude,
-                longitude,
-                radius,
-            )
+        restaurants = self.restaurant_repository.get_nearby_restaurants(
+            latitude,
+            longitude,
+            radius,
         )
 
         return [
-            self.build_restaurant_response(
-                restaurant
-            )
+            self.build_restaurant_response(restaurant)
             for restaurant in restaurants
         ]
-    
+
     def get_restaurant(
-            self,
-            restaurant_id: UUID,
+        self,
+        restaurant_id: UUID,
     ):
         restaurant = self.restaurant_repository.get_restaurant_by_id(
             restaurant_id
         )
 
         if not restaurant:
-            raise ValueError(
-                "Restaurant not found."
-            )
+            raise ValueError("Restaurant not found.")
 
-        return self.build_restaurant_response(
-            restaurant
-        )
-    
+        return self.build_restaurant_response(restaurant)
+
     def build_restaurant_response(
         self,
         restaurant: Restaurant,
     ):
 
-        point = to_shape(
-            restaurant.location
-        )
+        point = to_shape(restaurant.location)
 
         inspector_name = None
         if getattr(restaurant, "assigned_inspector", None):
             inspector_name = restaurant.assigned_inspector.name
         elif getattr(restaurant, "assigned_inspector_id", None):
-            insp_user = self.user_repository.get_user_by_id(restaurant.assigned_inspector_id)
+            insp_user = self.user_repository.get_user_by_id(
+                restaurant.assigned_inspector_id
+            )
             if insp_user:
                 inspector_name = insp_user.name
 
@@ -163,7 +138,9 @@ class RestaurantService:
             "contact_number": restaurant.contact_number,
             "status": getattr(restaurant, "status", "pending") or "pending",
             "safety_score": restaurant.safety_score,
-            "assigned_inspector_id": getattr(restaurant, "assigned_inspector_id", None),
+            "assigned_inspector_id": getattr(
+                restaurant, "assigned_inspector_id", None
+            ),
             "assigned_inspector_name": inspector_name,
             "created_at": restaurant.created_at,
             "updated_at": restaurant.updated_at,
@@ -180,22 +157,18 @@ class RestaurantService:
             restaurant_id
         )
 
-        owner = self.user_repository.get_user_by_id(
-                owner_id
-            )
+        owner = self.user_repository.get_user_by_id(owner_id)
 
         if owner.verification_status == VerificationStatus.REJECTED:
-                raise PermissionError(
-                    "Your owner account verification was rejected by an administrator."
-                )
+            raise PermissionError(
+                "Your owner account verification was rejected by an administrator."
+            )
 
         if not restaurant:
             raise ValueError("Restaurant not found.")
 
         if restaurant.owner_id != owner_id:
-            raise PermissionError(
-                "You don't own this restaurant."
-            )
+            raise PermissionError("You don't own this restaurant.")
 
         restaurant.name = restaurant_data.name
         restaurant.address = restaurant_data.address
@@ -208,14 +181,10 @@ class RestaurantService:
         )
         restaurant.contact_number = restaurant_data.contact_number
 
-        restaurant = self.restaurant_repository.update_restaurant(
-            restaurant
-        )
+        restaurant = self.restaurant_repository.update_restaurant(restaurant)
 
-        return self.build_restaurant_response(
-            restaurant
-        )
-    
+        return self.build_restaurant_response(restaurant)
+
     def delete_restaurant(
         self,
         restaurant_id: UUID,
@@ -227,36 +196,26 @@ class RestaurantService:
         )
 
         if not restaurant:
-            raise ValueError(
-                "Restaurant not found."
-            )
+            raise ValueError("Restaurant not found.")
 
         if restaurant.owner_id != owner_id:
-            raise PermissionError(
-                "You don't own this restaurant."
-            )
+            raise PermissionError("You don't own this restaurant.")
 
-        self.restaurant_repository.delete_restaurant(
-            restaurant
-        )
+        self.restaurant_repository.delete_restaurant(restaurant)
 
     def get_my_restaurants(
         self,
         owner_id: UUID,
     ):
-        restaurants = (
-            self.restaurant_repository.get_restaurants_by_owner(
-                owner_id
-            )
+        restaurants = self.restaurant_repository.get_restaurants_by_owner(
+            owner_id
         )
 
         return [
-            self.build_restaurant_response(
-                restaurant
-            )
+            self.build_restaurant_response(restaurant)
             for restaurant in restaurants
         ]
-    
+
     def search_restaurants(
         self,
         search: str | None = None,
@@ -268,36 +227,19 @@ class RestaurantService:
         limit: int = 10,
     ):
 
-        restaurants = (
-
-            self.restaurant_repository.search_restaurants(
-
-                search,
-
-                min_score,
-
-                max_score,
-
-                high_risk,
-
-                sort_by,
-
-                page,
-
-                limit,
-
-            )
-
+        restaurants = self.restaurant_repository.search_restaurants(
+            search,
+            min_score,
+            max_score,
+            high_risk,
+            sort_by,
+            page,
+            limit,
         )
 
         return [
-
-            self.build_restaurant_response(
-                restaurant
-            )
-
+            self.build_restaurant_response(restaurant)
             for restaurant in restaurants
-
         ]
 
     def update_restaurant_status(
@@ -307,7 +249,9 @@ class RestaurantService:
         actor_id: UUID,
         notes: str | None = None,
     ):
-        restaurant = self.restaurant_repository.get_restaurant_by_id(restaurant_id)
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            restaurant_id
+        )
         if not restaurant:
             raise ValueError("Restaurant not found.")
 
@@ -326,7 +270,8 @@ class RestaurantService:
             NotificationService(self.user_repository.db).send(
                 user_id=restaurant.owner_id,
                 title="Establishment Status Updated",
-                message=f"Your restaurant '{restaurant.name}' status has been updated to '{status_value}' by the inspector." + (f" Note: {notes}" if notes else ""),
+                message=f"Your restaurant '{restaurant.name}' status has been updated to '{status_value}' by the inspector."
+                + (f" Note: {notes}" if notes else ""),
                 notification_type=NotificationType.INFO,
             )
         except Exception:
@@ -340,7 +285,9 @@ class RestaurantService:
         inspector_id: UUID | None,
         admin_id: UUID,
     ):
-        restaurant = self.restaurant_repository.get_restaurant_by_id(restaurant_id)
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            restaurant_id
+        )
         if not restaurant:
             raise ValueError("Restaurant not found.")
 
@@ -354,7 +301,11 @@ class RestaurantService:
         restaurant.assigned_inspector_id = inspector_id
         updated = self.restaurant_repository.update_restaurant(restaurant)
 
-        msg = f"Assigned inspector '{inspector_name}' to {restaurant.name}" if inspector_name else f"Unassigned inspector from {restaurant.name}"
+        msg = (
+            f"Assigned inspector '{inspector_name}' to {restaurant.name}"
+            if inspector_name
+            else f"Unassigned inspector from {restaurant.name}"
+        )
 
         log_activity(
             db=self.restaurant_repository.db,
@@ -375,4 +326,4 @@ class RestaurantService:
             except Exception:
                 pass
 
-        return self.build_restaurant_response(updated)
+        return self.build_restaurant_response(updated)

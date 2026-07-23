@@ -21,53 +21,29 @@ from app.database.base import Base
 class Restaurant(Base):
     __tablename__ = "restaurants"
 
-
     restaurant_id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
 
     owner_id = Column(
-    UUID(as_uuid=True),
-    ForeignKey("users.user_id"),
-    nullable=False,
-)
-
-    name = Column(
-        String(150),
-        nullable=False
+        UUID(as_uuid=True),
+        ForeignKey("users.user_id"),
+        nullable=False,
     )
 
-    address = Column(
-        String(500),
-        nullable=False
-    )
+    name = Column(String(150), nullable=False)
+
+    address = Column(String(500), nullable=False)
 
     location = Column(
-    Geometry(
-        "POINT",
-        srid=4326,
-        spatial_index=False
-    ),
-    nullable=False
+        Geometry("POINT", srid=4326, spatial_index=False), nullable=False
     )
 
-    contact_number = Column(
-        String(20),
-        nullable=False
-    )
+    contact_number = Column(String(20), nullable=False)
 
-    status = Column(
-        String(50),
-        default="pending",
-        nullable=False
-    )
+    status = Column(String(50), default="pending", nullable=False)
 
-    safety_score = Column(
-        Numeric(5, 2),
-        default=0
-    )
+    safety_score = Column(Numeric(5, 2), default=0)
 
     assigned_inspector_id = Column(
         UUID(as_uuid=True),
@@ -75,15 +51,10 @@ class Restaurant(Base):
         nullable=True,
     )
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     owner = relationship(
@@ -100,24 +71,20 @@ class Restaurant(Base):
     certificates = relationship(
         "Certificate",
         back_populates="restaurant",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
 
     inspections = relationship(
-        "Inspection",
-        back_populates="restaurant",
-        cascade="all, delete-orphan"
+        "Inspection", back_populates="restaurant", cascade="all, delete-orphan"
     )
 
     complaints = relationship(
-        "Complaint",
-        back_populates="restaurant",
-        cascade="all, delete-orphan"
+        "Complaint", back_populates="restaurant", cascade="all, delete-orphan"
     )
 
     safety_score_details = relationship(
         "SafetyScore",
         back_populates="restaurant",
         uselist=False,
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )

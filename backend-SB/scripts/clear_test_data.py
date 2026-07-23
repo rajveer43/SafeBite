@@ -28,7 +28,9 @@ def clear_test_data():
     try:
         test_users = [
             user
-            for user in db.query(User).filter(User.role != UserRole.ADMIN).all()
+            for user in db.query(User)
+            .filter(User.role != UserRole.ADMIN)
+            .all()
             if TEST_USER_EMAIL.match(user.email)
         ]
 

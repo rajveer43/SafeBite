@@ -29,7 +29,6 @@ class CertificateService:
         self.certificate_repository = CertificateRepository(db)
         self.user_repository = UserRepository(db)
         self.restaurant_repository = RestaurantRepository(db)
-        
 
     def create_certificate(
         self,
@@ -55,19 +54,15 @@ class CertificateService:
         certificate = self.certificate_repository.create_certificate(
             certificate
         )
-        restaurant = (
-            self.restaurant_repository.get_restaurant_by_id(
-                certificate.restaurant_id
-            )
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            certificate.restaurant_id
         )
 
         if restaurant and restaurant.status == "pending":
             restaurant.status = "under_review"
             self.restaurant_repository.update_restaurant(restaurant)
 
-        SafetyScoreService(
-            self.certificate_repository.db
-        ).calculate_score(
+        SafetyScoreService(self.certificate_repository.db).calculate_score(
             certificate.restaurant_id
         )
 
@@ -98,16 +93,12 @@ class CertificateService:
         certificate_id: UUID,
     ):
 
-        certificate = (
-            self.certificate_repository.get_certificate_by_id(
-                certificate_id
-            )
+        certificate = self.certificate_repository.get_certificate_by_id(
+            certificate_id
         )
 
         if not certificate:
-            raise ValueError(
-                "Certificate not found."
-            )
+            raise ValueError("Certificate not found.")
 
         return certificate
 
@@ -116,11 +107,8 @@ class CertificateService:
         restaurant_id: UUID,
     ):
 
-        return (
-            self.certificate_repository
-            .get_restaurant_certificates(
-                restaurant_id
-            )
+        return self.certificate_repository.get_restaurant_certificates(
+            restaurant_id
         )
 
     def get_all_certificates(
@@ -133,7 +121,9 @@ class CertificateService:
         if restaurant_id:
             query = query.filter(Certificate.restaurant_id == restaurant_id)
         elif owner_id:
-            owner_restaurants = self.restaurant_repository.get_restaurants_by_owner(owner_id)
+            owner_restaurants = (
+                self.restaurant_repository.get_restaurants_by_owner(owner_id)
+            )
             rest_ids = [r.restaurant_id for r in owner_restaurants]
             if rest_ids:
                 query = query.filter(Certificate.restaurant_id.in_(rest_ids))
@@ -151,69 +141,43 @@ class CertificateService:
         certificate_data: CertificateUpdate,
     ):
 
-        certificate = (
-            self.certificate_repository.get_certificate_by_id(
-                certificate_id
-            )
+        certificate = self.certificate_repository.get_certificate_by_id(
+            certificate_id
         )
 
         if not certificate:
-            raise ValueError(
-                "Certificate not found."
-            )
+            raise ValueError("Certificate not found.")
 
-        certificate.certificate_type = (
-            certificate_data.certificate_type
-        )
+        certificate.certificate_type = certificate_data.certificate_type
 
-        certificate.certificate_number = (
-            certificate_data.certificate_number
-        )
+        certificate.certificate_number = certificate_data.certificate_number
 
-        certificate.issuing_authority = (
-            certificate_data.issuing_authority
-        )
+        certificate.issuing_authority = certificate_data.issuing_authority
 
-        certificate.issue_date = (
-            certificate_data.issue_date
-        )
+        certificate.issue_date = certificate_data.issue_date
 
-        certificate.expiry_date = (
-            certificate_data.expiry_date
-        )
+        certificate.expiry_date = certificate_data.expiry_date
 
-        certificate.status = (
-            certificate_data.status
-        )
+        certificate.status = certificate_data.status
 
-        certificate.document_url = (
-            certificate_data.document_url
-        )
+        certificate.document_url = certificate_data.document_url
 
         certificate = self.certificate_repository.update_certificate(
             certificate
         )
 
-        restaurant = (
-    self.restaurant_repository.get_restaurant_by_id(
-        certificate.restaurant_id
-    )
-)
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            certificate.restaurant_id
+        )
 
         if certificate.status == CertificateStatus.VERIFIED:
 
             NotificationService(
                 self.certificate_repository.db,
             ).send(
-
                 user_id=restaurant.owner_id,
-
                 title="Certificate Verified",
-
-                message=(
-                    "Your certificate has been verified successfully."
-                ),
-
+                message=("Your certificate has been verified successfully."),
                 notification_type=NotificationType.SUCCESS,
             )
 
@@ -222,15 +186,9 @@ class CertificateService:
             NotificationService(
                 self.certificate_repository.db,
             ).send(
-
                 user_id=restaurant.owner_id,
-
                 title="Certificate Rejected",
-
-                message=(
-                    "Your certificate has been rejected."
-                ),
-
+                message=("Your certificate has been rejected."),
                 notification_type=NotificationType.ERROR,
             )
 
@@ -239,21 +197,13 @@ class CertificateService:
             NotificationService(
                 self.certificate_repository.db,
             ).send(
-
                 user_id=restaurant.owner_id,
-
                 title="Certificate Expired",
-
-                message=(
-                    "Your certificate has expired."
-                ),
-
+                message=("Your certificate has expired."),
                 notification_type=NotificationType.WARNING,
             )
 
-        SafetyScoreService(
-            self.certificate_repository.db
-        ).calculate_score(
+        SafetyScoreService(self.certificate_repository.db).calculate_score(
             certificate.restaurant_id
         )
 
@@ -264,17 +214,11 @@ class CertificateService:
         certificate_id: UUID,
     ):
 
-        certificate = (
-            self.certificate_repository.get_certificate_by_id(
-                certificate_id
-            )
+        certificate = self.certificate_repository.get_certificate_by_id(
+            certificate_id
         )
 
         if not certificate:
-            raise ValueError(
-                "Certificate not found."
-            )
+            raise ValueError("Certificate not found.")
 
-        self.certificate_repository.delete_certificate(
-            certificate
-        )
+        self.certificate_repository.delete_certificate(certificate)

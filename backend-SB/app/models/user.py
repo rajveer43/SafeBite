@@ -20,27 +20,13 @@ class User(Base):
     __tablename__ = "users"
 
     user_id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        index=True
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True
     )
-    name = Column(
-        String(100), 
-        nullable=False
-        )
+    name = Column(String(100), nullable=False)
 
-    email = Column(
-        String(150), 
-        unique=True, 
-        nullable=False, 
-        index=True
-        )
+    email = Column(String(150), unique=True, nullable=False, index=True)
 
-    password_hash = Column(
-        String(255), 
-        nullable=False
-        )
+    password_hash = Column(String(255), nullable=False)
 
     role = Column(
         Enum(
@@ -61,27 +47,14 @@ class User(Base):
         default=VerificationStatus.PENDING,
     )
 
+    phone_number = Column(String(20), nullable=False)
 
-    phone_number = Column(
-        String(20), 
-        nullable=False
-        )
+    is_active = Column(Boolean, nullable=False, default=True)
 
-    is_active = Column(
-        Boolean, 
-        nullable = False, 
-        default=True
-        )
-
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     restaurants = relationship(
@@ -90,18 +63,12 @@ class User(Base):
         foreign_keys="[Restaurant.owner_id]",
     )
 
-    inspections = relationship(
-    "Inspection",
-    back_populates="inspector"
-    )
+    inspections = relationship("Inspection", back_populates="inspector")
 
-    complaints = relationship(
-    "Complaint",
-    back_populates="customer"
-    )
+    complaints = relationship("Complaint", back_populates="customer")
 
     notifications = relationship(
-    "Notification",
-    back_populates="user",
-    cascade="all, delete-orphan",
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

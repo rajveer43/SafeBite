@@ -86,6 +86,7 @@ def get_nearby_restaurants(
         radius=radius,
     )
 
+
 @router.get(
     "/my-restaurants",
     response_model=list[RestaurantResponse],
@@ -96,9 +97,7 @@ def get_my_restaurants(
 ):
     service = RestaurantService(db)
 
-    return service.get_my_restaurants(
-        current_user.user_id
-    )
+    return service.get_my_restaurants(current_user.user_id)
 
 
 @router.get(
@@ -112,9 +111,7 @@ def get_restaurant(
     service = RestaurantService(db)
 
     try:
-        return service.get_restaurant(
-            restaurant_id
-        )
+        return service.get_restaurant(restaurant_id)
 
     except ValueError as e:
         raise HTTPException(
@@ -183,54 +180,32 @@ def delete_restaurant(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e),
         )
-    
+
 
 @router.get(
     "/search",
     response_model=list[RestaurantResponse],
 )
 def search_restaurants(
-
     search: Optional[str] = None,
-
     min_score: Optional[float] = None,
-
     max_score: Optional[float] = None,
-
     high_risk: Optional[bool] = None,
-
     sort_by: Optional[str] = None,
-
     page: int = 1,
-
     limit: int = 10,
-
     db: Session = Depends(get_db),
-
 ):
 
-        return (
-
-            RestaurantService(db)
-            .search_restaurants(
-
-                search,
-
-                min_score,
-
-                max_score,
-
-                high_risk,
-
-                sort_by,
-
-                page,
-
-                limit,
-
-            )
-
-        )
+    return RestaurantService(db).search_restaurants(
+        search,
+        min_score,
+        max_score,
+        high_risk,
+        sort_by,
+        page,
+        limit,
+    )
 
 
 @router.put(

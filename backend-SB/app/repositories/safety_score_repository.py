@@ -31,9 +31,7 @@ class SafetyScoreRepository:
 
         return (
             self.db.query(SafetyScore)
-            .filter(
-                SafetyScore.restaurant_id == restaurant_id
-            )
+            .filter(SafetyScore.restaurant_id == restaurant_id)
             .first()
         )
 

@@ -35,16 +35,12 @@ class ComplaintService:
         complaint_data: ComplaintCreate,
     ) -> ComplaintResponse:
 
-        restaurant = (
-            self.restaurant_repository.get_restaurant_by_id(
-                complaint_data.restaurant_id
-            )
+        restaurant = self.restaurant_repository.get_restaurant_by_id(
+            complaint_data.restaurant_id
         )
 
         if not restaurant:
-            raise ValueError(
-                "Restaurant not found."
-            )
+            raise ValueError("Restaurant not found.")
 
         category = complaint_data.category or complaint_data.title
 
@@ -56,15 +52,9 @@ class ComplaintService:
             evidence_url=complaint_data.evidence_url,
         )
 
-        complaint = (
-            self.complaint_repository.create_complaint(
-                complaint
-            )
-        )
+        complaint = self.complaint_repository.create_complaint(complaint)
 
-        SafetyScoreService(
-            self.complaint_repository.db
-        ).calculate_score(
+        SafetyScoreService(self.complaint_repository.db).calculate_score(
             complaint.restaurant_id
         )
 
@@ -97,25 +87,35 @@ class ComplaintService:
         res = ComplaintResponse.model_validate(complaint)
         res.restaurant_name = restaurant.name if restaurant else None
         return res
-    
+
     def get_my_complaints(
         self,
         current_user: User | UUID,
     ) -> list[ComplaintResponse]:
         if isinstance(current_user, User):
             if current_user.role == UserRole.OWNER:
-                complaints = self.complaint_repository.get_all_owner_complaints(current_user.user_id)
+                complaints = (
+                    self.complaint_repository.get_all_owner_complaints(
+                        current_user.user_id
+                    )
+                )
             elif current_user.role in (UserRole.INSPECTOR, UserRole.ADMIN):
                 complaints = self.complaint_repository.get_all_complaints()
             else:
-                complaints = self.complaint_repository.get_customer_complaints(current_user.user_id)
+                complaints = self.complaint_repository.get_customer_complaints(
+                    current_user.user_id
+                )
         else:
-            complaints = self.complaint_repository.get_customer_complaints(current_user)
+            complaints = self.complaint_repository.get_customer_complaints(
+                current_user
+            )
 
         res_list = []
         for c in complaints:
             item = ComplaintResponse.model_validate(c)
-            item.restaurant_name = c.restaurant.name if getattr(c, "restaurant", None) else None
+            item.restaurant_name = (
+                c.restaurant.name if getattr(c, "restaurant", None) else None
+            )
             res_list.append(item)
         return res_list
 
@@ -127,41 +127,31 @@ class ComplaintService:
 
         if current_user.role == UserRole.INSPECTOR:
 
-            complaint = (
-                self.complaint_repository.get_complaint_by_id(
-                    complaint_id
-                )
+            complaint = self.complaint_repository.get_complaint_by_id(
+                complaint_id
             )
 
         elif current_user.role == UserRole.CUSTOMER:
 
-            complaint = (
-                self.complaint_repository.get_customer_complaint(
-                    complaint_id,
-                    current_user.user_id,
-                )
+            complaint = self.complaint_repository.get_customer_complaint(
+                complaint_id,
+                current_user.user_id,
             )
 
         elif current_user.role == UserRole.OWNER:
 
-            complaint = (
-                self.complaint_repository.get_owner_complaint(
-                    complaint_id,
-                    current_user.user_id,
-                )
+            complaint = self.complaint_repository.get_owner_complaint(
+                complaint_id,
+                current_user.user_id,
             )
 
         else:
             complaint = None
 
         if not complaint:
-            raise ValueError(
-                "Complaint not found or access denied."
-            )
+            raise ValueError("Complaint not found or access denied.")
 
-        return ComplaintResponse.model_validate(
-            complaint
-        )
+        return ComplaintResponse.model_validate(complaint)
 
     def get_restaurant_complaints(
         self,
@@ -171,34 +161,24 @@ class ComplaintService:
 
         if current_user.role == UserRole.OWNER:
 
-            restaurant = (
-                self.restaurant_repository.get_restaurant_by_owner(
-                    restaurant_id,
-                    current_user.user_id,
-                )
+            restaurant = self.restaurant_repository.get_restaurant_by_owner(
+                restaurant_id,
+                current_user.user_id,
             )
 
             if not restaurant:
-                raise ValueError(
-                    "Restaurant not found or access denied."
-                )
+                raise ValueError("Restaurant not found or access denied.")
 
         elif current_user.role != UserRole.INSPECTOR:
 
-            raise PermissionError(  
-                "Access denied."
-            )
+            raise PermissionError("Access denied.")
 
-        complaints = (
-            self.complaint_repository.get_restaurant_complaints(
-                restaurant_id
-            )
+        complaints = self.complaint_repository.get_restaurant_complaints(
+            restaurant_id
         )
 
         return [
-            ComplaintResponse.model_validate(
-                complaint
-            )
+            ComplaintResponse.model_validate(complaint)
             for complaint in complaints
         ]
 
@@ -208,36 +188,22 @@ class ComplaintService:
         complaint_data: ComplaintUpdate,
     ) -> ComplaintResponse:
 
-        complaint = (
-            self.complaint_repository.get_complaint_by_id(
-                complaint_id
-            )
-        )
+        complaint = self.complaint_repository.get_complaint_by_id(complaint_id)
 
         if not complaint:
-            raise ValueError(
-                "Complaint not found."
-            )
+            raise ValueError("Complaint not found.")
 
         complaint.status = complaint_data.status
-        complaint = (
-            self.complaint_repository.update_complaint(
-                complaint
-            )
-        )
+        complaint = self.complaint_repository.update_complaint(complaint)
 
         if complaint.status == ComplaintStatus.PENDING:
 
             NotificationService(
                 self.complaint_repository.db,
             ).send(
-
                 user_id=complaint.customer_id,
-
                 title="Complaint Submitted",
-
                 message="Your complaint has been submitted successfully.",
-
                 notification_type=NotificationType.INFO,
             )
 
@@ -246,13 +212,9 @@ class ComplaintService:
             NotificationService(
                 self.complaint_repository.db,
             ).send(
-
                 user_id=complaint.customer_id,
-
                 title="Complaint Under Investigation",
-
                 message="Your complaint is currently under investigation.",
-
                 notification_type=NotificationType.INFO,
             )
 
@@ -261,22 +223,14 @@ class ComplaintService:
             NotificationService(
                 self.complaint_repository.db,
             ).send(
-
                 user_id=complaint.customer_id,
-
                 title="Complaint Resolved",
-
                 message="Your complaint has been resolved successfully.",
-
                 notification_type=NotificationType.SUCCESS,
             )
 
-        SafetyScoreService(
-            self.complaint_repository.db
-        ).calculate_score(
+        SafetyScoreService(self.complaint_repository.db).calculate_score(
             complaint.restaurant_id
         )
 
-        return ComplaintResponse.model_validate(
-            complaint
-        )
+        return ComplaintResponse.model_validate(complaint)

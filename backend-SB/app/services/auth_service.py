@@ -25,30 +25,20 @@ class AuthService:
         user_data: UserRegister,
     ) -> User:
 
-        existing_user = (
-            self.user_repository.get_user_by_email(
-                user_data.email
-            )
-        )
+        existing_user = self.user_repository.get_user_by_email(user_data.email)
 
         if existing_user:
-            raise ValueError(
-                "Email already registered."
-            )
+            raise ValueError("Email already registered.")
 
         user = User(
             name=user_data.name,
             email=user_data.email,
-            password_hash=hash_password(
-                user_data.password
-            ),
+            password_hash=hash_password(user_data.password),
             phone_number=user_data.phone_number,
             role=user_data.role,
         )
 
-        user = self.user_repository.create_user(
-            user
-        )
+        user = self.user_repository.create_user(user)
 
         # Notify admins only when a new OWNER registers
         if user.role == UserRole.OWNER:
@@ -60,16 +50,12 @@ class AuthService:
                 NotificationService(
                     self.user_repository.db,
                 ).send(
-
                     user_id=admin.user_id,
-
                     title="New Owner Registration",
-
                     message=(
                         f"{user.name} has registered as a restaurant owner "
                         "and is awaiting verification."
                     ),
-
                     notification_type=NotificationType.INFO,
                 )
 
@@ -81,22 +67,16 @@ class AuthService:
         password: str,
     ) -> Token:
 
-        user = self.user_repository.get_user_by_email(
-            email
-        )
+        user = self.user_repository.get_user_by_email(email)
 
         if not user:
-            raise ValueError(
-                "Invalid email or password."
-            )
+            raise ValueError("Invalid email or password.")
 
         if not verify_password(
             password,
             user.password_hash,
         ):
-            raise ValueError(
-                "Invalid email or password."
-            )
+            raise ValueError("Invalid email or password.")
 
         access_token = create_access_token(
             data={

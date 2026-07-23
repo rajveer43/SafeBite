@@ -32,9 +32,7 @@ class ActivityService:
             entity_id=entity_id,
         )
 
-        return self.repository.create_activity(
-            activity
-        )
+        return self.repository.create_activity(activity)
 
     def get_recent(self):
 

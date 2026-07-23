@@ -24,7 +24,7 @@ os.makedirs("uploads/certificates", exist_ok=True)
 app = FastAPI(
     title="SafeBite API",
     version="1.0.0",
-    description="Hyperlocal Food Safety & Kitchen Transparency Platform"
+    description="Hyperlocal Food Safety & Kitchen Transparency Platform",
 )
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -44,7 +44,6 @@ app.add_middleware(
 )
 
 
-
 app.include_router(auth_router)
 app.include_router(restaurant_router)
 app.include_router(inspection_router)
@@ -54,11 +53,10 @@ app.include_router(safety_score_router)
 app.include_router(admin_router)
 app.include_router(notification_router)
 
+
 @app.get("/")
 def home():
-    return {
-        "message": "SafeBite API Running 🚀"
-    }
+    return {"message": "SafeBite API Running 🚀"}
 
 
 from fastapi import Depends
@@ -66,17 +64,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database.session import get_db
 
+
 @app.get("/health")
 def health(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
-        return {
-            "status": "Healthy",
-            "database": "Connected"
-        }
+        return {"status": "Healthy", "database": "Connected"}
     except Exception as e:
         return {
             "status": "Unhealthy",
             "database": "Disconnected",
-            "error": str(e)
+            "error": str(e),
         }

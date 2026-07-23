@@ -9,9 +9,7 @@ from app.database.session import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login"
-)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_current_user(
@@ -37,9 +35,7 @@ def get_current_user(
 
     repository = UserRepository(db)
 
-    user = repository.get_user_by_id(
-        UUID(user_id)
-    )
+    user = repository.get_user_by_id(UUID(user_id))
 
     if user is None:
         raise HTTPException(

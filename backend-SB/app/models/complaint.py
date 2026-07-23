@@ -22,61 +22,35 @@ class Complaint(Base):
     __tablename__ = "complaints"
 
     complaint_id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
 
     customer_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("users.user_id"),
-        nullable=False
+        UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=False
     )
 
     restaurant_id = Column(
         UUID(as_uuid=True),
         ForeignKey("restaurants.restaurant_id"),
-        nullable=False
+        nullable=False,
     )
 
-    description = Column(
-        Text,
-        nullable=False
-    )
+    description = Column(Text, nullable=False)
 
-    category = Column(
-        String(100),
-        nullable=True
-    )
+    category = Column(String(100), nullable=True)
 
     status = Column(
-        Enum(ComplaintStatus),
-        nullable=False,
-        default=ComplaintStatus.PENDING
+        Enum(ComplaintStatus), nullable=False, default=ComplaintStatus.PENDING
     )
 
-    evidence_url = Column(
-        String(500),
-        nullable=True
-    )
+    evidence_url = Column(String(500), nullable=True)
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    restaurant = relationship(
-        "Restaurant",
-        back_populates="complaints"
-    )
+    restaurant = relationship("Restaurant", back_populates="complaints")
 
-    customer = relationship(
-        "User",
-        back_populates="complaints"
-    )
+    customer = relationship("User", back_populates="complaints")

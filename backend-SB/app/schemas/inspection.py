@@ -43,7 +43,4 @@ class InspectionResponse(BaseModel):
     completed_date: date | None = None
     notes: str | None = None
 
-    model_config = {
-        "from_attributes": True
-    }
-    
+    model_config = {"from_attributes": True}

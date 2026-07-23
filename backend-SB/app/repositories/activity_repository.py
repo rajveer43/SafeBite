@@ -28,12 +28,8 @@ class ActivityRepository:
     ):
 
         return (
-            self.db.query(
-                ActivityLog
-            )
-            .order_by(
-                ActivityLog.created_at.desc()
-            )
+            self.db.query(ActivityLog)
+            .order_by(ActivityLog.created_at.desc())
             .limit(limit)
             .all()
         )

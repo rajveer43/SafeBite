@@ -31,9 +31,7 @@ class CertificateRepository:
 
         return (
             self.db.query(Certificate)
-            .filter(
-                Certificate.certificate_id == certificate_id
-            )
+            .filter(Certificate.certificate_id == certificate_id)
             .first()
         )
 
@@ -44,9 +42,7 @@ class CertificateRepository:
 
         return (
             self.db.query(Certificate)
-            .filter(
-                Certificate.restaurant_id == restaurant_id
-            )
+            .filter(Certificate.restaurant_id == restaurant_id)
             .all()
         )
 

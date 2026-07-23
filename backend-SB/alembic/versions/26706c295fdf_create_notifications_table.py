@@ -5,16 +5,18 @@ Revises: cb538486307b
 Create Date: 2026-07-14 11:13:26.570123
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
-# 
+
+#
 
 # revision identifiers, used by Alembic.
-revision: str = '26706c295fdf'
-down_revision: Union[str, Sequence[str], None] = 'cb538486307b'
+revision: str = "26706c295fdf"
+down_revision: Union[str, Sequence[str], None] = "cb538486307b"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -28,31 +30,26 @@ def upgrade() -> None:
 
     op.create_table(
         "notifications",
-
         sa.Column(
             "notification_id",
             sa.UUID(),
             nullable=False,
         ),
-
         sa.Column(
             "user_id",
             sa.UUID(),
             nullable=False,
         ),
-
         sa.Column(
             "title",
             sa.String(200),
             nullable=False,
         ),
-
         sa.Column(
             "message",
             sa.String(500),
             nullable=False,
         ),
-
         sa.Column(
             "type",
             postgresql.ENUM(
@@ -65,25 +62,21 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-
         sa.Column(
             "is_read",
             sa.Boolean(),
             nullable=False,
             server_default=sa.false(),
         ),
-
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
         ),
-
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["users.user_id"],
         ),
-
         sa.PrimaryKeyConstraint(
             "notification_id",
         ),

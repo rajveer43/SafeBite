@@ -27,14 +27,9 @@ class SafetyScoreCalculator:
                 key=lambda inspection: inspection.inspection_date,
             )
 
-            inspection_weight = (
-                float(latest.score) / 100
-            ) * 60
+            inspection_weight = (float(latest.score) / 100) * 60
 
-            days = (
-                date.today()
-                - latest.inspection_date
-            ).days
+            days = (date.today() - latest.inspection_date).days
 
             if days > 365:
 
@@ -65,10 +60,7 @@ class SafetyScoreCalculator:
 
                 under_investigation += 1
 
-        penalty = (
-            pending * 5
-            + under_investigation * 2
-        )
+        penalty = pending * 5 + under_investigation * 2
 
         complaint_weight = max(
             0,

@@ -31,12 +31,8 @@ class NotificationRepository:
 
         return (
             self.db.query(Notification)
-            .filter(
-                Notification.user_id == user_id
-            )
-            .order_by(
-                Notification.created_at.desc()
-            )
+            .filter(Notification.user_id == user_id)
+            .order_by(Notification.created_at.desc())
             .all()
         )
 
@@ -47,9 +43,7 @@ class NotificationRepository:
 
         return (
             self.db.query(Notification)
-            .filter(
-                Notification.notification_id == notification_id
-            )
+            .filter(Notification.notification_id == notification_id)
             .first()
         )
 

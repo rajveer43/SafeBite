@@ -13,7 +13,11 @@ from app.schemas.auth import (
 from app.services.auth_service import AuthService
 from app.dependencies.auth import get_current_user
 from app.models.user import User
-from app.dependencies.roles import require_owner, require_customer, require_inspector
+from app.dependencies.roles import (
+    require_owner,
+    require_customer,
+    require_inspector,
+)
 
 router = APIRouter(
     prefix="/auth",
@@ -66,6 +70,7 @@ def login(
             detail=str(e),
         )
 
+
 @router.get(
     "/me",
     response_model=UserResponse,
@@ -75,29 +80,21 @@ def get_logged_in_user(
 ):
     return current_user
 
+
 @router.get("/owner-test")
-def owner_test(
+def owner_test(owner: User = Depends(require_owner)):
+    return {"message": f"Welcome {owner.name}. You are an owner."}
 
-    owner: User = Depends(require_owner)
-
-):
-    return {
-        "message": f"Welcome {owner.name}. You are an owner."
-    }
 
 @router.get("/customer-test")
 def customer_test(
     customer: User = Depends(require_customer),
 ):
-    return {
-        "message": f"Welcome {customer.name}. You are a customer."
-    }
+    return {"message": f"Welcome {customer.name}. You are a customer."}
 
 
 @router.get("/inspector-test")
 def inspector_test(
     inspector: User = Depends(require_inspector),
 ):
-    return {
-        "message": f"Welcome {inspector.name}. You are an inspector."
-    }
+    return {"message": f"Welcome {inspector.name}. You are an inspector."}
