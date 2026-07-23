@@ -105,7 +105,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* ---------- Full-height column: header · content · footer ---------- */}
-        <div className="relative z-10 mx-auto flex h-full min-h-screen w-full max-w-[460px] flex-col px-11 xl:px-14 py-10 xl:py-12">
+        <div
+          style={{ paddingLeft: 56, paddingRight: 56, paddingTop: 48, paddingBottom: 48 }}
+          className="relative z-10 mx-auto flex h-full min-h-screen w-full max-w-[460px] flex-col"
+        >
           {/* Header — logo + mission badge */}
           <div className="shrink-0">
             <motion.div
@@ -139,7 +142,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.05 }}
-              className="mt-5"
+              style={{ marginTop: 20 }}
             >
               <span
                 className="inline-flex max-w-full items-center gap-2 rounded-full text-[12px] font-medium text-emerald-100/95 backdrop-blur-md transition-colors duration-200 cursor-default hover:bg-white/[0.12]"
@@ -156,7 +159,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Main content — vertically centered in remaining space */}
-          <div className="flex flex-1 flex-col justify-center py-10">
+          <div
+            style={{ paddingTop: 40, paddingBottom: 40 }}
+            className="flex flex-1 flex-col justify-center"
+          >
             {/* Headline */}
             <motion.h2
               initial={{ opacity: 0, y: 16 }}
@@ -175,15 +181,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-5 max-w-[400px] text-[15px]"
-              style={{ lineHeight: 1.65, color: "rgba(255,255,255,0.72)" }}
+              className="max-w-[400px] text-[15px]"
+              style={{ marginTop: 20, lineHeight: 1.65, color: "rgba(255,255,255,0.72)" }}
             >
               Every restaurant score, inspection report, and verified badge helps
               you dine with complete confidence — and total peace of mind.
             </motion.p>
 
             {/* Feature cards — consistent height, aligned icon + text */}
-            <div className="mt-9 flex w-full flex-col gap-3">
+            <div style={{ marginTop: 32 }} className="flex w-full flex-col gap-3">
               {[
                 {
                   icon: ShieldCheck,
@@ -207,9 +213,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.32 + idx * 0.1 }}
                   whileHover={{ y: -2 }}
-                  className="group flex w-full items-start gap-3.5 rounded-2xl cursor-default hover:border-white/18"
+                  className="group flex w-full items-start rounded-2xl cursor-default hover:border-white/18"
                   style={{
-                    padding: "14px 16px",
+                    gap: 14,
+                    padding: "16px 18px",
                     background: "rgba(255,255,255,0.05)",
                     border: "1px solid rgba(255,255,255,0.09)",
                     backdropFilter: "blur(10px)",
@@ -243,7 +250,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* Statistics — equal columns, centered content */}
-            <div className="mt-8 grid w-full grid-cols-3 gap-3">
+            <div style={{ marginTop: 24 }} className="grid w-full grid-cols-3 gap-3">
               {[
                 { value: "5,000+", label: "Restaurants" },
                 { value: "98%", label: "Safety Rate" },
@@ -309,19 +316,19 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           backgroundSize: "40px 40px", opacity: 0.2,
         }} />
 
-        {/* Top Half Subtle Watermark Illustration (7% opacity) */}
-        <div className="absolute top-10 right-16 pointer-events-none opacity-[0.07] text-emerald-900">
+        {/* Top Half Subtle Watermark Illustration — pushed to background texture */}
+        <div className="absolute top-10 right-16 pointer-events-none opacity-[0.04] text-emerald-900">
           <Shield size={280} strokeWidth={1} />
         </div>
-        <div className="absolute bottom-10 left-16 pointer-events-none opacity-[0.06] text-emerald-800">
+        <div className="absolute bottom-10 left-16 pointer-events-none opacity-[0.035] text-emerald-800">
           <Utensils size={240} strokeWidth={1} />
         </div>
 
-        {/* Scattered Floating Semi-Transparent Icons */}
+        {/* Scattered Floating Semi-Transparent Icons — quiet texture, well clear of the card */}
         <motion.div
           animate={{ y: [-10, 10, -10], rotate: [-6, 6, -6] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute top-16 left-20 text-emerald-600/25 pointer-events-none"
+          className="hidden sm:block absolute top-16 left-20 text-emerald-600/12 pointer-events-none"
         >
           <Shield size={36} />
         </motion.div>
@@ -329,7 +336,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <motion.div
           animate={{ y: [10, -10, 10], rotate: [6, -6, 6] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute top-28 right-24 text-emerald-600/20 pointer-events-none"
+          className="hidden sm:block absolute top-28 right-24 text-emerald-600/10 pointer-events-none"
         >
           <Utensils size={32} />
         </motion.div>
@@ -337,7 +344,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <motion.div
           animate={{ y: [-8, 12, -8], rotate: [-4, 8, -4] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute bottom-28 left-28 text-emerald-600/25 pointer-events-none"
+          className="hidden sm:block absolute bottom-28 left-28 text-emerald-600/12 pointer-events-none"
         >
           <CheckCircle2 size={34} />
         </motion.div>
@@ -345,7 +352,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <motion.div
           animate={{ y: [12, -8, 12], rotate: [8, -4, 8] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute bottom-20 right-32 text-emerald-600/20 pointer-events-none"
+          className="hidden sm:block absolute bottom-20 right-32 text-emerald-600/10 pointer-events-none"
         >
           <FileText size={32} />
         </motion.div>
@@ -353,7 +360,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <motion.div
           animate={{ y: [-12, 10, -12], scale: [1, 1.1, 1] }}
           transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute top-1/3 left-12 text-emerald-600/15 pointer-events-none"
+          className="hidden sm:block absolute top-1/3 left-12 text-emerald-600/[0.08] pointer-events-none"
         >
           <BarChart3 size={38} />
         </motion.div>
@@ -361,92 +368,113 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <motion.div
           animate={{ y: [10, -12, 10], scale: [1.1, 1, 1.1] }}
           transition={{ duration: 8.5, repeat: Infinity, ease: "easeInOut" }}
-          className="hidden sm:block absolute bottom-1/3 right-12 text-emerald-600/20 pointer-events-none"
+          className="hidden sm:block absolute bottom-1/3 right-12 text-emerald-600/10 pointer-events-none"
         >
           <Bell size={34} />
         </motion.div>
 
-        {/* Main Center Card Wrapper with 3 Floating Status Cards */}
-        <div className="w-full max-w-[500px] relative z-10">
-          {/* Floating Card 1: 🟢 Safety Score 96/100 Excellent (Clean Floating Left) */}
+        {/* Main Center Card Wrapper with 4 Floating Status Cards */}
+        <div className="w-full max-w-[480px] relative z-10">
+          {/* Floating Card — TOP LEFT · Safety Score (medium elevation, quiet) */}
           <motion.div
-            initial={{ opacity: 0, x: -20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            whileHover={{ y: -4, scale: 1.05 }}
-            className="hidden xl:flex absolute top-6 -left-36 xl:-left-44 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 px-4 shadow-xl border border-emerald-100/90 items-center gap-3.5 z-20"
+            initial={{ opacity: 0, x: -16, scale: 0.94 }}
+            animate={{ opacity: 0.88, x: 0, scale: 1, y: [-6, 6, -6] }}
+            transition={{
+              opacity: { duration: 0.6, delay: 0.4 },
+              x: { duration: 0.6, delay: 0.4 },
+              scale: { duration: 0.6, delay: 0.4 },
+              y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
+            }}
+            whileHover={{ opacity: 1 }}
+            style={{ padding: "14px 18px" }}
+            className="hidden xl:flex absolute -top-10 -left-40 xl:-left-48 bg-white/85 backdrop-blur-md rounded-[18px] shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] border border-slate-200/60 items-center gap-3.5 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
-              <ShieldCheck size={20} />
+            <div className="w-9 h-9 rounded-[12px] bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+              <ShieldCheck size={18} />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Safety Score</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.08em]">Safety Score</span>
               </div>
-              <p className="text-sm font-black text-slate-900 mt-0.5">
-                96/100 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full ml-1">Excellent</span>
+              <p className="text-[13px] font-bold text-slate-800 mt-0.5">
+                96/100 <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-1">Excellent</span>
               </p>
             </div>
           </motion.div>
 
-          {/* Floating Card 2: 📋 Inspection Complete La Crest Passed Today (Clean Floating Right) */}
+          {/* Floating Card — TOP RIGHT · Certificate Alert (medium elevation, quiet) */}
           <motion.div
-            initial={{ opacity: 0, x: 20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            whileHover={{ y: -4, scale: 1.05 }}
-            className="hidden xl:flex absolute bottom-8 -right-36 xl:-right-44 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 px-4 shadow-xl border border-blue-100/90 items-center gap-3.5 z-20"
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 0.88, scale: 1, y: [6, -6, 6] }}
+            transition={{
+              opacity: { duration: 0.6, delay: 0.5 },
+              scale: { duration: 0.6, delay: 0.5 },
+              y: { duration: 9, repeat: Infinity, ease: "easeInOut" },
+            }}
+            whileHover={{ opacity: 1 }}
+            style={{ padding: "14px 18px" }}
+            className="hidden xl:flex absolute -top-10 -right-40 xl:-right-48 bg-white/85 backdrop-blur-md rounded-[18px] shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] border border-slate-200/60 items-center gap-3.5 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-              <ClipboardCheck size={20} />
+            <div className="w-9 h-9 rounded-[12px] bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+              <Bell size={18} />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Inspection Complete</span>
-              </div>
-              <p className="text-xs font-bold text-slate-800 mt-0.5">
-                La Crest <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full ml-1">Passed Today</span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.08em]">New Alert</span>
+              <p className="text-[12px] font-bold text-slate-800 mt-0.5">
+                Certificate <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full ml-1">Expires in 5 days</span>
               </p>
             </div>
           </motion.div>
 
-          {/* Floating Card 3: 🔔 New Alert Certificate expires in 5 days (Clean Floating Top Right) */}
+          {/* Floating Card — BOTTOM LEFT · Live Safety Score (medium elevation, quiet) */}
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            whileHover={{ y: -4, scale: 1.05 }}
-            className="hidden xl:flex absolute -top-8 -right-28 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 px-4 shadow-xl border border-amber-100/90 items-center gap-3.5 z-20"
+            initial={{ opacity: 0, x: -16, scale: 0.94 }}
+            animate={{ opacity: 0.88, x: 0, scale: 1, y: [-8, 6, -8] }}
+            transition={{
+              opacity: { duration: 0.6, delay: 0.6 },
+              x: { duration: 0.6, delay: 0.6 },
+              scale: { duration: 0.6, delay: 0.6 },
+              y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+            }}
+            whileHover={{ opacity: 1 }}
+            style={{ padding: "14px 18px" }}
+            className="hidden xl:flex absolute -bottom-10 -left-40 xl:-left-48 bg-white/85 backdrop-blur-md rounded-[18px] shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] border border-slate-200/60 items-center gap-3.5 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
-              <Bell size={20} />
+            <div className="w-9 h-9 rounded-[12px] bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+              <Smartphone size={18} />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">New Alert</span>
+                <ShieldCheck size={12} className="text-emerald-600" />
+                <span className="text-[11px] font-bold text-slate-800">Live Safety Score</span>
               </div>
-              <p className="text-xs font-bold text-slate-800 mt-0.5">
-                Certificate <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-1">Expires in 5 days</span>
-              </p>
+              <p className="text-[10px] text-slate-400 font-medium mt-0.5">98.4% Verified Dining Protection</p>
             </div>
           </motion.div>
 
-          {/* Soft Illustration Badge near bottom right */}
+          {/* Floating Card — BOTTOM RIGHT · Inspection Complete (medium elevation, quiet) */}
           <motion.div
-            animate={{ y: [-6, 6, -6] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden md:flex absolute -bottom-16 left-6 xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl p-3.5 px-4 shadow-xl border border-emerald-100/80 items-center gap-3.5 z-20"
+            initial={{ opacity: 0, x: 16, scale: 0.94 }}
+            animate={{ opacity: 0.88, x: 0, scale: 1, y: [6, -8, 6] }}
+            transition={{
+              opacity: { duration: 0.6, delay: 0.7 },
+              x: { duration: 0.6, delay: 0.7 },
+              scale: { duration: 0.6, delay: 0.7 },
+              y: { duration: 10, repeat: Infinity, ease: "easeInOut" },
+            }}
+            whileHover={{ opacity: 1 }}
+            style={{ padding: "14px 18px" }}
+            className="hidden xl:flex absolute -bottom-10 -right-40 xl:-right-48 bg-white/85 backdrop-blur-md rounded-[18px] shadow-[0_10px_30px_-12px_rgba(15,23,42,0.18)] border border-slate-200/60 items-center gap-3.5 z-20"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/25 shrink-0">
-              <Smartphone size={20} />
+            <div className="w-9 h-9 rounded-[12px] bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+              <ClipboardCheck size={18} />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-emerald-600" />
-                <span className="text-xs font-bold text-slate-900">Live Safety Score</span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">98.4% Verified Dining Protection</p>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.08em]">Inspection Complete</span>
+              <p className="text-[12px] font-bold text-slate-800 mt-0.5">
+                La Crest <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full ml-1">Passed Today</span>
+              </p>
             </div>
           </motion.div>
 
