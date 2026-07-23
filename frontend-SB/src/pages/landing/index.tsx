@@ -109,15 +109,15 @@ function SectionHeader({ tag, title, highlight, subtitle }: {
   tag: string; title: string; highlight: string; subtitle: string;
 }) {
   return (
-    <div className="mx-auto mb-10 flex w-full max-w-3xl flex-col items-center justify-center text-center">
-      <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/10 text-emerald-700 text-xs font-semibold rounded-full mb-4 border border-emerald-500/20 shadow-xs">
-        <Zap size={12} className="text-emerald-600 animate-pulse" />
+    <div style={{ marginBottom: 40 }} className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center text-center">
+      <div style={{ marginBottom: 20, gap: 8, padding: "6px 14px" }} className="inline-flex items-center bg-emerald-500/10 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-500/20 shadow-xs">
+        <Zap size={13} className="text-emerald-600 animate-pulse" />
         <span>{tag}</span>
       </div>
-      <h2 className="w-full text-center text-3xl sm:text-4xl lg:text-[2.6rem] font-extrabold leading-tight text-slate-900 tracking-tight">
+      <h2 className="w-full text-center text-3xl sm:text-4xl lg:text-[2.6rem] font-extrabold leading-[1.15] text-slate-900 tracking-tight">
         {title} <span className="text-emerald-600">{highlight}</span>
       </h2>
-      <p className="mx-auto mt-3.5 max-w-xl text-center text-base sm:text-lg text-slate-500 leading-relaxed font-normal">{subtitle}</p>
+      <p style={{ marginTop: 18 }} className="mx-auto max-w-xl text-center text-base sm:text-lg text-slate-500 leading-relaxed font-normal">{subtitle}</p>
     </div>
   );
 }
@@ -288,8 +288,8 @@ export default function LandingPage() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", background: "rgba(5,150,105,0.1)", border: "1px solid rgba(5,150,105,0.2)", borderRadius: 999, marginBottom: 28 }}>
-              <Zap size={12} color="#059669" />
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", background: "rgba(5,150,105,0.1)", border: "1px solid rgba(5,150,105,0.2)", borderRadius: 999, marginBottom: 28 }}>
+              <Zap size={13} color="#059669" />
               <span style={{ fontSize: 12, fontWeight: 600, color: "#065f46" }}>AI-Powered Food Safety Platform</span>
             </div>
 
@@ -456,7 +456,7 @@ export default function LandingPage() {
       {/* ────────────────────────────────────────────
           FEATURES
       ──────────────────────────────────────────── */}
-      <section id="features" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 20px", background: "transparent", textAlign: "center", zIndex: 1 }}>
+      <section id="features" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", paddingTop: 72, paddingBottom: 60, background: "transparent", textAlign: "center", zIndex: 1 }}>
         <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
             <SectionHeader
@@ -472,6 +472,7 @@ export default function LandingPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={stagger}
+            style={{ marginTop: 16 }}
             className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 justify-items-center"
           >
             {features.map((feature, i) => (
@@ -481,12 +482,13 @@ export default function LandingPage() {
                 custom={i + 1}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="group flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-8 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
+                style={{ padding: "36px 28px" }}
+                className="group flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
               >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 group-hover:bg-emerald-600 transition-colors duration-300 group-hover:scale-110">
+                <div style={{ marginBottom: 20 }} className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 group-hover:bg-emerald-600 transition-colors duration-300 group-hover:scale-110">
                   <feature.icon size={26} className="text-emerald-600 group-hover:text-white transition-colors duration-300" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2.5 text-center">{feature.title}</h3>
+                <h3 style={{ marginBottom: 10 }} className="text-lg font-bold text-slate-900 text-center leading-snug">{feature.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed flex-1 text-center">{feature.description}</p>
               </motion.div>
             ))}
@@ -559,10 +561,12 @@ export default function LandingPage() {
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
             variants={fadeUp} custom={0}
-            className="w-full relative overflow-hidden rounded-3xl py-16 px-6 sm:py-20 sm:px-12 text-center shadow-xl flex flex-col items-center justify-center border border-emerald-900/30"
+            className="w-full relative overflow-hidden rounded-[28px] px-6 sm:px-12 text-center shadow-xl flex flex-col items-center justify-center border border-emerald-400/15"
             style={{
-              background: "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f172a 100%)",
-              boxShadow: "0 16px 40px rgba(6, 78, 59, 0.3)",
+              paddingTop: 64,
+              paddingBottom: 88,
+              background: "linear-gradient(135deg, #043a2e 0%, #064e3b 45%, #053024 100%)",
+              boxShadow: "0 24px 60px -20px rgba(6, 78, 59, 0.55)",
             }}
           >
             {/* Animated background glow orbs */}
@@ -576,16 +580,30 @@ export default function LandingPage() {
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
               className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"
             />
+            {/* Top sheen + fine grid texture for depth */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.10) 0%, transparent 55%)" }}
+            />
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.05]"
+              style={{
+                backgroundImage: "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+                backgroundSize: "44px 44px",
+                maskImage: "radial-gradient(120% 100% at 50% 0%, #000 0%, transparent 70%)",
+                WebkitMaskImage: "radial-gradient(120% 100% at 50% 0%, #000 0%, transparent 70%)",
+              }}
+            />
 
             <div className="relative w-full max-w-4xl mx-auto flex flex-col items-center justify-center text-center">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full mb-4 border border-emerald-400/20 backdrop-blur-sm shadow-xs">
-                <Zap size={12} className="text-emerald-400 animate-pulse" />
+              <div style={{ marginBottom: 18, gap: 8, padding: "6px 14px" }} className="inline-flex items-center bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full border border-emerald-400/20 backdrop-blur-sm shadow-xs">
+                <Zap size={13} className="text-emerald-400 animate-pulse" />
                 <span>Statistics</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+              <h2 style={{ marginBottom: 16 }} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 Trusted by thousands <span className="text-emerald-300">across the country</span>
               </h2>
-              <p className="text-sm sm:text-base text-emerald-100/90 mb-10 max-w-lg mx-auto leading-relaxed">
+              <p style={{ marginBottom: 48 }} className="text-sm sm:text-base text-emerald-100/90 max-w-lg mx-auto leading-relaxed">
                 Our growing network of restaurants, consumers, and health inspectors is making food safer every day.
               </p>
 
@@ -595,16 +613,25 @@ export default function LandingPage() {
                 {stats.map((stat, i) => (
                   <motion.div
                     key={stat.label} variants={fadeUp} custom={i + 1}
-                    whileHover={{ y: -4, scale: 1.03 }}
+                    whileHover={{ y: -6, scale: 1.03 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="rounded-2xl p-6 text-center w-full max-w-xs border border-white/15 backdrop-blur-md shadow-md transition-all duration-300 flex flex-col items-center justify-center"
-                    style={{ background: "rgba(255, 255, 255, 0.08)" }}
+                    style={{
+                      padding: "16px 12px",
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 100%)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 24px -12px rgba(0,0,0,0.5)",
+                    }}
+                    className="group rounded-xl text-center w-full max-w-[200px] border border-white/15 backdrop-blur-md transition-all duration-300 hover:border-emerald-300/40 flex flex-col items-center justify-center"
                   >
-                    <stat.icon size={26} className={cn("mx-auto mb-3", stat.color)} />
-                    <p className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight">
+                    <div
+                      style={{ marginBottom: 10 }}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/[0.07] border border-white/10 transition-all duration-300 group-hover:bg-white/[0.12] group-hover:scale-110"
+                    >
+                      <stat.icon size={18} className={cn(stat.color)} />
+                    </div>
+                    <p style={{ marginBottom: 5 }} className="text-2xl sm:text-[1.9rem] font-extrabold text-white tracking-tight leading-none">
                       <AnimatedCounter value={stat.value} />
                     </p>
-                    <p className="text-[11px] sm:text-xs text-emerald-200/90 font-semibold uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-[10px] sm:text-[11px] text-emerald-200/80 font-semibold uppercase tracking-[0.1em]">{stat.label}</p>
                   </motion.div>
                 ))}
               </motion.div>
@@ -616,7 +643,7 @@ export default function LandingPage() {
       {/* ────────────────────────────────────────────
           TESTIMONIALS
       ──────────────────────────────────────────── */}
-      <section id="testimonials" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "40px 0 20px", background: "transparent", textAlign: "center", zIndex: 1 }}>
+      <section id="testimonials" style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", paddingTop: 72, paddingBottom: 60, background: "transparent", textAlign: "center", zIndex: 1 }}>
         <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "0 24px", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
             <SectionHeader
@@ -629,24 +656,27 @@ export default function LandingPage() {
 
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
-            variants={stagger} className="mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full justify-items-center"
+            variants={stagger}
+            style={{ marginTop: 16 }}
+            className="mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full justify-items-center"
           >
             {testimonials.map((t, i) => (
               <motion.div
                 key={t.name} variants={fadeUp} custom={i + 1}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm p-8 shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
+                style={{ padding: "32px 28px" }}
+                className="flex h-full w-full max-w-sm flex-col items-center text-center rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300"
               >
-                <Quote size={26} className="text-emerald-500/40 mb-3.5" />
-                <div className="flex gap-1 mb-4 justify-center">
+                <Quote size={26} className="text-emerald-500/40" style={{ marginBottom: 16 }} />
+                <div style={{ marginBottom: 16 }} className="flex gap-1 justify-center">
                   {Array.from({ length: t.rating }).map((_, j) => (
                     <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-slate-600 text-sm leading-relaxed flex-1 mb-5 text-center">"{t.text}"</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100 mt-auto w-full justify-center">
-                  <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-xs", t.color)}>
+                <p style={{ marginBottom: 24 }} className="text-slate-600 text-sm leading-relaxed flex-1 text-center">"{t.text}"</p>
+                <div style={{ paddingTop: 20 }} className="flex items-center gap-3 border-t border-slate-100 mt-auto w-full justify-center">
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-xs", t.color)}>
                     <span className="text-xs font-bold text-white">{t.avatar}</span>
                   </div>
                   <div className="text-left">
@@ -679,11 +709,11 @@ export default function LandingPage() {
           <motion.div
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }}
             variants={fadeUp} custom={0}
-            className="w-full relative overflow-hidden rounded-3xl text-center shadow-xl flex flex-col items-center justify-center border border-emerald-900/30"
+            className="w-full relative overflow-hidden rounded-[28px] text-center shadow-xl flex flex-col items-center justify-center border border-emerald-400/15"
             style={{
-              padding: "48px 32px",
-              background: "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f172a 100%)",
-              boxShadow: "0 16px 40px rgba(6, 78, 59, 0.35)",
+              padding: "64px 32px 72px",
+              background: "linear-gradient(135deg, #043a2e 0%, #064e3b 45%, #053024 100%)",
+              boxShadow: "0 24px 60px -20px rgba(6, 78, 59, 0.55)",
             }}
           >
             {/* Animated background glow orbs */}
@@ -697,29 +727,36 @@ export default function LandingPage() {
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"
             />
+            {/* Top sheen for depth */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.10) 0%, transparent 55%)" }}
+            />
 
             <div className="relative w-full max-w-lg mx-auto flex flex-col items-center justify-center text-center">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full mb-4 border border-emerald-400/20 backdrop-blur-sm shadow-xs">
-                <Zap size={12} className="text-emerald-400 animate-pulse" />
+              <div style={{ marginBottom: 18, gap: 8, padding: "6px 14px" }} className="inline-flex items-center bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full border border-emerald-400/20 backdrop-blur-sm shadow-xs">
+                <Zap size={13} className="text-emerald-400 animate-pulse" />
                 <span>Get Started</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+              <h2 style={{ marginBottom: 16 }} className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 Ready to make food <span className="text-emerald-300">safer?</span>
               </h2>
-              <p className="text-xs sm:text-sm text-emerald-100/90 mb-7 leading-relaxed max-w-md mx-auto">
+              <p style={{ marginBottom: 36 }} className="text-sm sm:text-[15px] text-emerald-100/90 leading-relaxed max-w-md mx-auto">
                 Join thousands of consumers, restaurants, and health inspectors who trust SafeBite to keep every meal safe.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full">
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
                   <Link to="/register"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-emerald-500/30 text-decoration-none">
-                    Get Started Free <ArrowRight size={16} />
+                    style={{ padding: "14px 28px" }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-[15px] rounded-[14px] transition-all shadow-lg shadow-emerald-500/30 text-decoration-none">
+                    Get Started Free <ArrowRight size={18} />
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
                   <Link to="/customer/restaurants"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 bg-white/10 hover:bg-white/15 text-white font-semibold text-sm rounded-xl border border-white/20 transition-all backdrop-blur-sm text-decoration-none">
-                    Explore Restaurants <ChevronRight size={16} />
+                    style={{ padding: "14px 28px" }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-semibold text-[15px] rounded-[14px] border border-white/20 transition-all backdrop-blur-sm text-decoration-none">
+                    Explore Restaurants <ChevronRight size={18} />
                   </Link>
                 </motion.div>
               </div>
@@ -731,26 +768,27 @@ export default function LandingPage() {
       {/* ────────────────────────────────────────────
           FOOTER — Sleek Theme Matching Alignment & High Contrast
       ──────────────────────────────────────────── */}
-      <footer style={{ width: "100%", background: "#051310", borderTop: "1px solid rgba(5, 150, 105, 0.2)", color: "#cbd5e1", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto", padding: "64px 24px 48px" }}>
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-5 mb-14">
-            <div className="lg:col-span-2 max-w-sm text-left">
-              <Link to="/" className="inline-flex items-center gap-2.5 mb-5 text-decoration-none">
-                <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+      <footer style={{ position: "relative", zIndex: 2, width: "100%", background: "#051310", borderTop: "1px solid rgba(5, 150, 105, 0.2)", color: "#cbd5e1", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ width: "100%", maxWidth: 1100, margin: "0 auto", padding: "72px 32px 40px" }}>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-12" style={{ marginBottom: 56 }}>
+            {/* Brand column */}
+            <div className="col-span-2 lg:col-span-5 max-w-sm text-left">
+              <Link to="/" className="inline-flex items-center gap-2.5 text-decoration-none" style={{ marginBottom: 20 }}>
+                <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md">
                   <ShieldCheck size={18} className="text-white" />
                 </div>
                 <span className="text-lg font-bold text-white tracking-tight">
                   Safe<span className="text-emerald-400">Bite</span>
                 </span>
               </Link>
-              <p className="text-sm leading-relaxed text-slate-300 mb-6">
+              <p className="text-sm leading-relaxed" style={{ color: "#94a3b8", marginBottom: 24, maxWidth: 320 }}>
                 AI-powered food safety platform protecting consumers, empowering restaurants, and supporting health inspectors nationwide.
               </p>
               <div className="flex gap-2.5">
                 {["T", "L", "G"].map((s, i) => (
                   <a key={i} href="#"
-                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-decoration-none"
-                    style={{ background: "rgba(255, 255, 255, 0.08)", color: "#e2e8f0" }}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-decoration-none border border-white/10 hover:border-emerald-400/40 hover:bg-white/[0.12]"
+                    style={{ background: "rgba(255, 255, 255, 0.06)", color: "#e2e8f0" }}
                     aria-label={["Twitter", "LinkedIn", "GitHub"][i]}>
                     <span className="text-xs font-semibold">{s}</span>
                   </a>
@@ -758,20 +796,21 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Link columns */}
             {[
               { heading: "Product", links: [{ label: "Features", href: "#features" }, { label: "How It Works", href: "#how-it-works" }, { label: "Restaurants", href: "/customer/restaurants" }, { label: "Testimonials", href: "#testimonials" }] },
               { heading: "Company", links: [{ label: "About Us", href: "#" }, { label: "Careers", href: "#" }, { label: "Blog", href: "#" }, { label: "Press", href: "#" }] },
               { heading: "Legal", links: [{ label: "Privacy Policy", href: "#" }, { label: "Terms of Service", href: "#" }, { label: "Cookie Policy", href: "#" }, { label: "Contact Us", href: "#" }] },
             ].map((col) => (
-              <div key={col.heading} className="text-left">
-                <h4 className="text-emerald-300 font-bold uppercase text-xs tracking-wider mb-4">{col.heading}</h4>
-                <ul className="space-y-3 text-sm">
+              <div key={col.heading} className="col-span-1 lg:col-span-2 text-left">
+                <h4 className="text-emerald-300 font-semibold uppercase text-[11px] tracking-[0.1em]" style={{ marginBottom: 18 }}>{col.heading}</h4>
+                <ul className="flex flex-col gap-3 text-sm">
                   {col.links.map((l) => (
                     <li key={l.label}>
                       {l.href.startsWith("/") ? (
-                        <Link to={l.href} className="text-slate-300 hover:text-emerald-400 transition-colors text-decoration-none">{l.label}</Link>
+                        <Link to={l.href} className="hover:text-emerald-400 transition-colors text-decoration-none" style={{ color: "#94a3b8" }}>{l.label}</Link>
                       ) : (
-                        <a href={l.href} className="text-slate-300 hover:text-emerald-400 transition-colors text-decoration-none">{l.label}</a>
+                        <a href={l.href} className="hover:text-emerald-400 transition-colors text-decoration-none" style={{ color: "#94a3b8" }}>{l.label}</a>
                       )}
                     </li>
                   ))}
@@ -780,7 +819,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="pt-8 border-t border-emerald-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs" style={{ paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)", color: "#64748b" }}>
             <p>© {new Date().getFullYear()} SafeBite. All rights reserved.</p>
             <p>Made with ♥ for food safety</p>
           </div>
