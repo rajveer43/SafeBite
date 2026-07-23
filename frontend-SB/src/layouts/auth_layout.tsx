@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
-  ShieldCheck, Sparkles, TrendingUp, Building2, MapPin,
+  ShieldCheck, Sparkles,
   ClipboardCheck, Bell, CheckCircle2, Utensils, FileText,
-  BarChart3, Shield, Award, AlertTriangle, Smartphone
+  BarChart3, Shield, AlertTriangle, Smartphone
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, useInView } from "motion/react";
@@ -55,148 +55,241 @@ function AnimatedCounter({ value }: { value: string }) {
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex w-full bg-slate-50 font-sans">
-      {/* Left Branding Panel — Rich Dark Emerald Gradient */}
-      <div className="hidden lg:flex w-[520px] xl:w-[580px] shrink-0 flex-col justify-between p-12 xl:p-14 text-white relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #022c22 0%, #064e3b 45%, #0f172a 100%)" }}
+      {/* ============================================================
+          LEFT BRANDING PANEL — Premium layered emerald hero
+          Deep emerald gradient · glass cards · 8pt rhythm
+          ============================================================ */}
+      <div
+        className="hidden lg:flex w-[520px] xl:w-[580px] shrink-0 text-white relative overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(155deg, #0B4A3B 0%, #08362C 55%, #062A22 100%)",
+        }}
       >
-        {/* Background glowing animated ambient orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* ---------- Layered background depth (all < 6% presence) ---------- */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Radial glow behind content */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 90% at 25% 30%, rgba(16,104,78,0.55) 0%, transparent 60%)",
+            }}
+          />
+          {/* Large blurred accent circles — very low opacity */}
           <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.3, 0.15] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-0 left-0 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.04, 0.07, 0.04] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-24 -left-20 w-[26rem] h-[26rem] rounded-full blur-3xl"
+            style={{ background: "#10684E" }}
           />
           <motion.div
-            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.35, 0.2] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"
+            animate={{ scale: [1.15, 1, 1.15], opacity: [0.05, 0.03, 0.05] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -bottom-28 -right-16 w-[30rem] h-[30rem] rounded-full blur-3xl"
+            style={{ background: "#10684E" }}
+          />
+          {/* Whisper-soft grid for structure (~4% opacity) */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              maskImage:
+                "radial-gradient(120% 100% at 30% 30%, #000 0%, transparent 75%)",
+              WebkitMaskImage:
+                "radial-gradient(120% 100% at 30% 30%, #000 0%, transparent 75%)",
+            }}
           />
         </div>
 
-        {/* Header logo */}
-        <div className="relative z-10">
-          <Link to="/" className="inline-flex items-center gap-3 group text-decoration-none">
+        {/* ---------- Full-height column: header · content · footer ---------- */}
+        <div className="relative z-10 mx-auto flex h-full min-h-screen w-full max-w-[460px] flex-col px-11 xl:px-14 py-10 xl:py-12">
+          {/* Header — logo + mission badge */}
+          <div className="shrink-0">
             <motion.div
-              whileHover={{ scale: 1.08, rotate: 3 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-10 h-10 bg-emerald-500/20 border border-emerald-400/30 rounded-xl flex items-center justify-center backdrop-blur-md shadow-lg shadow-emerald-500/20"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <ShieldCheck size={20} className="text-emerald-300" />
+              <Link
+                to="/"
+                className="inline-flex items-center gap-3 group no-underline"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.06, rotate: 3 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md"
+                  style={{
+                    background: "rgba(16,104,78,0.35)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    boxShadow: "0 8px 24px -8px rgba(16,104,78,0.6)",
+                  }}
+                >
+                  <ShieldCheck size={20} className="text-emerald-300" />
+                </motion.div>
+                <span className="text-[22px] font-semibold tracking-tight text-white leading-none">
+                  Safe<span className="text-emerald-400">Bite</span>
+                </span>
+              </Link>
             </motion.div>
-            <span className="text-2xl font-black tracking-tight text-white">
-              Safe<span className="text-emerald-400">Bite</span>
-            </span>
-          </Link>
-        </div>
 
-        {/* Content body */}
-        <div className="relative z-10 space-y-10 my-auto py-10">
-          <div>
             <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="mt-5"
+            >
+              <span
+                className="inline-flex max-w-full items-center gap-2 rounded-full text-[12px] font-medium text-emerald-100/95 backdrop-blur-md transition-colors duration-200 cursor-default hover:bg-white/[0.12]"
+                style={{
+                  padding: "8px 14px",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                }}
+              >
+                <Sparkles size={13} className="shrink-0 text-emerald-300" />
+                <span className="tracking-wide">Our Mission · Safer Dining for Everyone</span>
+              </span>
+            </motion.div>
+          </div>
+
+          {/* Main content — vertically centered in remaining space */}
+          <div className="flex flex-1 flex-col justify-center py-10">
+            {/* Headline */}
+            <motion.h2
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-400/15 text-emerald-300 text-xs font-semibold rounded-full mb-4 border border-emerald-400/20 backdrop-blur-sm shadow-xs"
+              transition={{ duration: 0.6, delay: 0.12 }}
+              className="text-white font-bold text-[2.5rem] xl:text-[2.85rem] tracking-[-0.02em]"
+              style={{ lineHeight: 1.1 }}
             >
-              <Sparkles size={13} className="text-emerald-400 animate-pulse" />
-              <span>SafeBite Mission</span>
-            </motion.div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-3xl xl:text-4xl font-black leading-snug tracking-tight text-white mb-4"
-            >
-              Every Safe Meal Starts Here
+              Every Safe Meal
+              <br />
+              Starts Here
             </motion.h2>
 
+            {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm xl:text-base text-emerald-100/90 leading-relaxed font-semibold max-w-md mb-3"
+              className="mt-5 max-w-[400px] text-[15px]"
+              style={{ lineHeight: 1.65, color: "rgba(255,255,255,0.72)" }}
             >
-              At SafeBite, we believe everyone deserves to dine with confidence.
+              Every restaurant score, inspection report, and verified badge helps
+              you dine with complete confidence — and total peace of mind.
             </motion.p>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-sm xl:text-base text-emerald-100/75 leading-8 font-normal max-w-md mb-8"
-            >
-              Every restaurant score, inspection report, and verified badge helps you make safer choices with complete peace of mind.
-            </motion.p>
+            {/* Feature cards — consistent height, aligned icon + text */}
+            <div className="mt-9 flex w-full flex-col gap-3">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: "Verified Restaurants",
+                  desc: "Backed by official inspection data and verified safety ratings.",
+                },
+                {
+                  icon: BarChart3,
+                  title: "AI Safety Scores",
+                  desc: "Real-time hygiene analytics & instant rating insights.",
+                },
+                {
+                  icon: AlertTriangle,
+                  title: "Report & Protect",
+                  desc: "Report food safety concerns directly to protect your community.",
+                },
+              ].map((feature, idx) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.32 + idx * 0.1 }}
+                  whileHover={{ y: -2 }}
+                  className="group flex w-full items-start gap-3.5 rounded-2xl cursor-default hover:border-white/18"
+                  style={{
+                    padding: "14px 16px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    transition:
+                      "box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, transform 0.25s ease",
+                  }}
+                >
+                  <div
+                    className="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-shadow duration-300 group-hover:shadow-[0_0_18px_-4px_rgba(16,104,78,0.9)]"
+                    style={{
+                      background: "rgba(16,104,78,0.32)",
+                      boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <feature.icon size={18} className="text-emerald-300" />
+                  </div>
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <h4 className="text-[15px] font-semibold text-white leading-tight tracking-tight">
+                      {feature.title}
+                    </h4>
+                    <p
+                      className="text-[13px] mt-1.5 leading-relaxed"
+                      style={{ color: "rgba(255,255,255,0.58)" }}
+                    >
+                      {feature.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Statistics — equal columns, centered content */}
+            <div className="mt-8 grid w-full grid-cols-3 gap-3">
+              {[
+                { value: "5,000+", label: "Restaurants" },
+                { value: "98%", label: "Safety Rate" },
+                { value: "50+", label: "Cities" },
+              ].map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.62 + i * 0.08 }}
+                  whileHover={{ y: -2 }}
+                  className="flex flex-col items-start justify-center rounded-2xl"
+                  style={{
+                    padding: "18px 16px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    transition: "box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease",
+                  }}
+                >
+                  <p className="text-[24px] xl:text-[26px] font-bold text-white tracking-tight leading-none whitespace-nowrap">
+                    <AnimatedCounter value={s.value} />
+                  </p>
+                  <p
+                    className="text-[12px] mt-2.5 leading-none font-medium"
+                    style={{ color: "rgba(255,255,255,0.5)" }}
+                  >
+                    {s.label}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
-          {/* Feature Rows with Line Spacing */}
-          <div className="space-y-7 my-10">
-            {[
-              {
-                icon: ShieldCheck,
-                title: "Verified Restaurants",
-                desc: "Backed by official inspection data and verified safety ratings.",
-                color: "text-emerald-400",
-              },
-              {
-                icon: BarChart3,
-                title: "AI Safety Scores",
-                desc: "Real-time hygiene analytics & instant rating insights.",
-                color: "text-blue-400",
-              },
-              {
-                icon: AlertTriangle,
-                title: "Report & Protect",
-                desc: "Report food safety concerns directly to protect your community.",
-                color: "text-amber-400",
-              },
-            ].map((feature, idx) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.35 + idx * 0.1 }}
-                whileHover={{ x: 6 }}
-                className="flex items-start gap-4 py-3 text-white cursor-default group"
-              >
-                <div className="mt-0.5 shrink-0">
-                  <feature.icon size={20} className={`${feature.color} transition-transform group-hover:scale-110`} />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold mb-1 text-white tracking-wide">{feature.title}</h4>
-                  <p className="text-xs text-emerald-100/75 mt-0.5 leading-relaxed font-normal">{feature.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Stats Row in a Clean Single Line (Original Border Styling & No Text Clipping) */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.6 }}
-            className="grid grid-cols-3 gap-4 pt-8 mt-10 border-t border-white/10 px-2"
+          {/* Footer — pinned to bottom */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="shrink-0 text-[12px] font-normal tracking-wide"
+            style={{ color: "rgba(255,255,255,0.38)" }}
           >
-            {[
-              { value: "5,000+", label: "Restaurants" },
-              { value: "98%", label: "Safety Rate" },
-              { value: "50+", label: "Cities" },
-            ].map((s) => (
-              <div key={s.label} className="text-center min-w-0">
-                <p className="text-xl xl:text-2xl font-black text-white tracking-tight whitespace-nowrap">
-                  <AnimatedCounter value={s.value} />
-                </p>
-                <p className="text-xs text-emerald-200/80 font-medium mt-0.5 whitespace-nowrap">{s.label}</p>
-              </div>
-            ))}
-          </motion.div>
+            © SafeBite. All rights reserved.
+          </motion.p>
         </div>
-
-        {/* Footer info */}
-        <p className="relative z-10 text-xs text-emerald-200/60 font-medium pt-2">
-          © SafeBite. All rights reserved.
-        </p>
       </div>
 
       {/* Right Content Panel */}
