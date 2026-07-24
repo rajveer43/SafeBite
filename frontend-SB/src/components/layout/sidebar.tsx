@@ -6,7 +6,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth_context";
-import { cn } from "@/lib/utils";
 
 interface SidebarProps { collapsed: boolean; onToggle: () => void; }
 
@@ -37,6 +36,20 @@ const navItems: NavItem[] = [
   { to: "/inspector/notifications",    label: "Notifications",icon: <Bell           size={20} />, roles: ["inspector"] },
 ];
 
+/* Enterprise SaaS design tokens */
+const C = {
+  sidebar: "#020817",
+  card: "#111827",
+  border: "rgba(255,255,255,0.06)",
+  hover: "rgba(255,255,255,0.04)",
+  green: "#10B981",
+  greenActiveBg: "rgba(16,185,129,0.12)",
+  greenActiveBorder: "rgba(16,185,129,0.25)",
+  textPrimary: "#F8FAFC",
+  textSecondary: "#94A3B8",
+  textHover: "#CBD5E1",
+};
+
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { role, logout } = useAuth();
   const navigate = useNavigate();
@@ -48,110 +61,185 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className={cn(
-        "h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-30",
-        "bg-slate-950 border-r border-slate-800/80 shadow-2xl",
-        collapsed ? "w-[68px]" : "w-64"
-      )}
+      className="h-screen sticky top-0 flex flex-col transition-[width] duration-300 ease-in-out z-30"
+      style={{
+        width: collapsed ? 76 : 288,
+        background: C.sidebar,
+        borderRight: `1px solid ${C.border}`,
+      }}
     >
-      {/* Header / Logo */}
-      <div className={cn(
-        "flex items-center h-16 shrink-0 border-b border-slate-800/80",
-        collapsed ? "justify-center px-0" : "gap-3 px-4"
-      )}>
-        {!collapsed && (
-          <Link to="/" className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
-              <ShieldCheck size={20} className="text-white" strokeWidth={2.2} />
-            </div>
-            <span className="text-lg font-extrabold text-white tracking-tight truncate">
-              Safe<span className="text-emerald-400 font-black">Bite</span>
-            </span>
+      {/* ── Header / Logo (72px, aligned to 20px gutter) ── */}
+      <div
+        className="flex items-center shrink-0"
+        style={{
+          height: 72,
+          padding: collapsed ? "0 14px" : "0 20px",
+          justifyContent: collapsed ? "center" : "space-between",
+        }}
+      >
+        {!collapsed ? (
+          <>
+            <Link to="/" className="flex items-center min-w-0" style={{ gap: 16 }}>
+              <div
+                className="flex items-center justify-center shrink-0"
+                style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: C.green,
+                  boxShadow: "0 6px 16px -6px rgba(16,185,129,0.5)",
+                }}
+              >
+                <ShieldCheck size={24} className="text-white" strokeWidth={2.2} />
+              </div>
+              <span
+                className="truncate"
+                style={{ fontWeight: 700, fontSize: 24, letterSpacing: "-0.5px", color: C.textPrimary, lineHeight: 1 }}
+              >
+                Safe<span style={{ color: "#34D399" }}>Bite</span>
+              </span>
+            </Link>
+            <button
+              onClick={onToggle}
+              aria-label="Collapse sidebar"
+              className="hidden lg:flex items-center justify-center shrink-0 cursor-pointer transition-colors duration-200"
+              style={{ width: 36, height: 36, borderRadius: 999, color: C.textSecondary }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.textPrimary; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.textSecondary; }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/"
+            className="flex items-center justify-center"
+            style={{ width: 48, height: 48, borderRadius: 14, background: C.green, boxShadow: "0 6px 16px -6px rgba(16,185,129,0.5)" }}
+          >
+            <ShieldCheck size={24} className="text-white" strokeWidth={2.2} />
           </Link>
         )}
-        {collapsed && (
-          <Link to="/" className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <ShieldCheck size={20} className="text-white" strokeWidth={2.2} />
-          </Link>
-        )}
-        <button
-          onClick={onToggle}
-          className={cn(
-            "hidden lg:flex items-center justify-center w-7 h-7 rounded-lg",
-            "text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 cursor-pointer",
-            collapsed && "hidden"
-          )}
-        >
-          <ChevronLeft size={16} />
-        </button>
       </div>
 
-      {/* Navigation list */}
-      <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-3 no-scrollbar">
+      {/* ── Divider ── */}
+      <div style={{ height: 1, background: C.border, margin: "0 20px" }} />
+
+      {/* ── Navigation ── */}
+      <nav
+        className="flex-1 overflow-y-auto no-scrollbar flex flex-col"
+        style={{ padding: collapsed ? "12px 12px 0" : "12px 20px 0", gap: 8 }}
+      >
         {collapsed && (
           <button
             onClick={onToggle}
-            className="flex items-center justify-center w-full h-9 mb-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 cursor-pointer"
+            aria-label="Expand sidebar"
+            className="flex items-center justify-center w-full cursor-pointer transition-colors duration-200"
+            style={{ height: 44, borderRadius: 12, color: C.textSecondary }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.textPrimary; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.textSecondary; }}
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={18} />
           </button>
         )}
+
         {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to.split("/").length <= 2}
             title={collapsed ? item.label : undefined}
-            className={({ isActive }) => cn(
-              "flex items-center gap-3.5 rounded-xl transition-all duration-200 group font-semibold",
-              collapsed ? "justify-center px-0 py-3" : "px-3.5 py-3",
-              isActive
-                ? "bg-emerald-500/15 text-emerald-400 border-l-4 border-emerald-400 shadow-sm"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/80"
-            )}
           >
-            <span className="shrink-0 transition-transform duration-200 group-hover:scale-110">
-              {item.icon}
-            </span>
-            {!collapsed && (
-              <span className="text-sm font-semibold tracking-tight truncate">
-                {item.label}
+            {({ isActive }) => (
+              <span
+                className="flex items-center transition-colors duration-[180ms] group"
+                style={{
+                  height: 48,
+                  padding: collapsed ? 0 : "12px 16px",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  gap: 14,
+                  borderRadius: 12,
+                  background: isActive ? C.greenActiveBg : "transparent",
+                  border: isActive ? `1px solid ${C.greenActiveBorder}` : "1px solid transparent",
+                  color: isActive ? C.textPrimary : C.textSecondary,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) { e.currentTarget.style.background = C.hover; e.currentTarget.style.color = C.textHover; }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.textSecondary; }
+                }}
+              >
+                <span
+                  className="flex items-center justify-center shrink-0"
+                  style={{ width: 24, height: 24, color: isActive ? C.green : "inherit" }}
+                >
+                  {item.icon}
+                </span>
+                {!collapsed && (
+                  <span
+                    className="truncate"
+                    style={{ fontWeight: 500, fontSize: 16, lineHeight: "24px" }}
+                  >
+                    {item.label}
+                  </span>
+                )}
               </span>
             )}
           </NavLink>
         ))}
       </nav>
 
-      {/* Footer / User Session */}
-      <div className={cn(
-        "shrink-0 border-t border-slate-800/80 py-4",
-        collapsed ? "px-2" : "px-3"
-      )}>
+      {/* ── Footer / User Session ── */}
+      <div style={{ padding: collapsed ? "12px 12px 20px" : "12px 20px 20px" }}>
         {!collapsed && (
-          <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-2xl bg-slate-900/60 border border-slate-800/60">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0 font-extrabold text-sm">
+          <div
+            className="flex items-center"
+            style={{
+              gap: 14, padding: 16, borderRadius: 16,
+              background: C.card, border: `1px solid ${C.border}`,
+            }}
+          >
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: C.greenActiveBg, border: `1px solid ${C.greenActiveBorder}`,
+                color: C.green, fontWeight: 700, fontSize: 16,
+              }}
+            >
               {(role || "U")[0].toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-white truncate leading-tight">{roleLabel}</p>
-              <p className="text-xs text-slate-400 font-medium leading-tight mt-0.5">Active session</p>
+              <p className="truncate" style={{ fontWeight: 600, fontSize: 16, color: C.textPrimary, lineHeight: 1.2 }}>
+                {roleLabel}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: C.textSecondary, lineHeight: 1.2, marginTop: 3 }}>
+                Active session
+              </p>
             </div>
           </div>
         )}
+
         <button
           onClick={() => { logout(); navigate("/login"); }}
-          title={collapsed ? "Logout" : undefined}
-          className={cn(
-            "flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer font-semibold",
-            "text-slate-400 hover:text-red-400 hover:bg-red-500/15",
-            collapsed ? "justify-center px-0 py-3" : "px-3.5 py-2.5 text-sm"
-          )}
+          title={collapsed ? "Sign out" : undefined}
+          className="flex items-center w-full cursor-pointer transition-colors duration-[180ms]"
+          style={{
+            marginTop: collapsed ? 0 : 16,
+            height: 44,
+            padding: collapsed ? 0 : "0 16px",
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: 14, borderRadius: 10,
+            fontWeight: 500, fontSize: 15,
+            color: C.textSecondary,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; e.currentTarget.style.color = "#F87171"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.textSecondary; }}
         >
-          <LogOut size={18} />
+          <span className="flex items-center justify-center shrink-0" style={{ width: 24, height: 24 }}>
+            <LogOut size={18} />
+          </span>
           {!collapsed && <span>Sign out</span>}
         </button>
       </div>
     </aside>
   );
 }
-

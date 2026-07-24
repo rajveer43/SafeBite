@@ -72,6 +72,7 @@ export default function App() {
           <Route path="/customer" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerDashboard /></ProtectedRoute>} />
           <Route path="/customer/restaurants" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerRestaurants /></ProtectedRoute>} />
           <Route path="/customer/complaints" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerComplaints /></ProtectedRoute>} />
+          <Route path="/customer/complaints/new" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerComplaints /></ProtectedRoute>} />
           <Route path="/customer/notifications" element={<ProtectedRoute allowedRoles={["customer"]}><CustomerNotifications /></ProtectedRoute>} />
 
           {/* Owner Routes */}

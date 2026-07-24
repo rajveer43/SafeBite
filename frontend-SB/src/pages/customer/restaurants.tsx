@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -9,9 +9,6 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/layouts/dashboard_layout";
 import RestaurantCard from "@/components/common/restaurant-card";
-import SearchBar from "@/components/common/search-bar";
-import EmptyState from "@/components/common/empty-state";
-import Button from "@/components/ui/button";
 import Card, { CardContent } from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Skeleton from "@/components/ui/skeleton";
@@ -24,6 +21,13 @@ import type { Restaurant, RestaurantFilters } from "@/types";
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
+/* Shared design tokens (matches customer dashboard) */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const CONTROL: React.CSSProperties = {
+  height: 44, borderRadius: 12, border: CARD_BORDER, fontSize: 15, background: "#fff",
 };
 
 const SORT_OPTIONS = [
@@ -139,7 +143,8 @@ export default function CustomerRestaurants() {
 
   return (
     <DashboardLayout title="Restaurants">
-      <div className="space-y-6">
+      <div className="flex flex-col" style={{ gap: 24 }}>
+        {/* Header */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -147,53 +152,61 @@ export default function CustomerRestaurants() {
           className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
               Restaurants
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p style={{ fontSize: 15, color: "#64748b", marginTop: 6 }}>
               Search and filter restaurants by safety score.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center" style={{ gap: 8 }}>
+            <button
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              className="inline-flex items-center gap-2 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors duration-200 cursor-pointer"
+              style={{ height: 44, padding: "0 16px", ...CONTROL }}
             >
-              <SlidersHorizontal className="h-4 w-4" />
+              <SlidersHorizontal size={16} />
               Filters
               {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                <span className="inline-flex items-center justify-center" style={{ minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: "rgba(16,185,129,0.12)", color: "#059669" }}>
                   {activeFilterCount}
-                </Badge>
+                </span>
               )}
-            </Button>
+            </button>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center text-slate-500 hover:text-slate-800 font-semibold text-sm transition-colors duration-200 cursor-pointer"
+                style={{ height: 44, padding: "0 12px", borderRadius: 12 }}
+              >
                 Clear all
-              </Button>
+              </button>
             )}
           </div>
         </motion.div>
 
+        {/* Search + Sort */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeUp}
           className="flex flex-col gap-3 sm:flex-row sm:items-center"
         >
-          <div className="flex-1">
-            <SearchBar
+          <div className="relative flex-1">
+            <Search size={18} className="text-slate-400" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+            <input
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search restaurants by name or location..."
+              className="w-full text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+              style={{ ...CONTROL, paddingLeft: 46, paddingRight: 16 }}
             />
           </div>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortValue)}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="text-slate-700 font-medium cursor-pointer outline-none transition-all duration-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+            style={{ ...CONTROL, padding: "0 14px" }}
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -324,21 +337,39 @@ export default function CustomerRestaurants() {
         </AnimatePresence>
 
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3" style={{ gap: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-56 rounded-xl" />
+              <Skeleton key={i} className="h-56 rounded-2xl" />
             ))}
           </div>
         ) : restaurants.length === 0 ? (
-          <EmptyState
-            icon={Search}
-            title="No restaurants found"
-            description="Try adjusting your search or filters to find restaurants."
-          />
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div className="flex flex-col items-center justify-center text-center mx-auto" style={{ minHeight: 280, maxWidth: 460, gap: 16, padding: "40px 24px" }}>
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(16,185,129,0.10)", color: "#10b981" }}>
+                <Search size={26} />
+              </div>
+              <div style={{ maxWidth: 380 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>No restaurants found</h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  Try adjusting your search or filters to find restaurants.
+                </p>
+              </div>
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, marginTop: 4, boxShadow: SHADOW_REST }}
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
           <>
             <motion.div
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid sm:grid-cols-2 lg:grid-cols-3"
+              style={{ gap: 20 }}
               initial="hidden"
               animate="visible"
               variants={{

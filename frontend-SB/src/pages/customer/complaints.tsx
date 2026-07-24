@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,12 +16,9 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/layouts/dashboard_layout";
 import StatusBadge from "@/components/common/status-badge";
-import EmptyState from "@/components/common/empty-state";
 import { useToast } from "@/components/common/toast";
 import Button from "@/components/ui/button";
 import Card, { CardContent } from "@/components/ui/card";
-import Input from "@/components/ui/input";
-import Textarea from "@/components/ui/textarea";
 import Skeleton from "@/components/ui/skeleton";
 import Dialog, {
   DialogFooter,
@@ -66,6 +64,53 @@ const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
+
+/* Shared design tokens (matches customer dashboard) */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+const FIELD_STYLE: React.CSSProperties = {
+  width: "100%", borderRadius: 12, border: CARD_BORDER, fontSize: 15, color: "#0f172a", background: "#fff",
+};
+const FIELD_CLASS = "outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10";
+const LABEL_STYLE: React.CSSProperties = {
+  display: "block", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b", marginBottom: 8,
+};
+
+const STAT_ICON: Record<"emerald" | "amber" | "blue", { bg: string; fg: string; border: string }> = {
+  emerald: { bg: "rgba(16,185,129,0.10)", fg: "#059669", border: "rgba(16,185,129,0.20)" },
+  amber:   { bg: "rgba(245,158,11,0.10)", fg: "#d97706", border: "rgba(245,158,11,0.20)" },
+  blue:    { bg: "rgba(59,130,246,0.10)", fg: "#2563eb", border: "rgba(59,130,246,0.20)" },
+};
+
+function StatCard({
+  color, top, label, value, icon,
+}: {
+  color: "emerald" | "amber" | "blue"; top: string; label: string; value: number; icon: React.ReactNode;
+}) {
+  const s = STAT_ICON[color];
+  return (
+    <div
+      className="bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{ minHeight: 130, borderRadius: 18, padding: 20, border: CARD_BORDER, borderTop: `3px solid ${top}`, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}>
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+    </div>
+  );
+}
 
 const STATUS_COLORS: Record<string, { filled: string; label: string }> = {
   pending:             { filled: "bg-amber-400",   label: "Pending" },
@@ -229,6 +274,9 @@ function ComplaintItem({ complaint }: { complaint: Complaint }) {
 
 export default function CustomerComplaints() {
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isNewComplaintRoute = location.pathname === "/customer/complaints/new";
 
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -303,13 +351,31 @@ export default function CustomerComplaints() {
     fetchRestaurants();
   }, [fetchComplaints, fetchRestaurants]);
 
+  useEffect(() => {
+    if (isNewComplaintRoute) {
+      setDialogOpen(true);
+    }
+  }, [isNewComplaintRoute]);
+
+  const openNewComplaintDialog = () => {
+    navigate("/customer/complaints/new");
+  };
+
+  const closeNewComplaintDialog = () => {
+    setDialogOpen(false);
+    reset();
+
+    if (isNewComplaintRoute) {
+      navigate("/customer/complaints", { replace: true });
+    }
+  };
+
   const onSubmit = async (data: ComplaintFormData) => {
     setSubmitting(true);
     try {
       await createComplaint({ ...data, restaurant_id: data.restaurant_id });
       toast("Complaint submitted successfully", "success");
-      setDialogOpen(false);
-      reset();
+      closeNewComplaintDialog();
       await fetchComplaints();
     } catch (error: any) {
       toast(
@@ -343,7 +409,8 @@ export default function CustomerComplaints() {
 
   return (
     <DashboardLayout title="Complaints">
-      <div className="space-y-6">
+      <div className="flex flex-col" style={{ gap: 24 }}>
+        {/* Header */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -351,106 +418,82 @@ export default function CustomerComplaints() {
           className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Complaints</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              Complaints
+            </h1>
+            <p style={{ fontSize: 15, color: "#64748b", marginTop: 6 }}>
               Track and manage your food safety complaints.
             </p>
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
+          <button
+            onClick={openNewComplaintDialog}
+            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer shrink-0"
+            style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+          >
+            <Plus size={17} strokeWidth={2.5} />
             New Complaint
-          </Button>
+          </button>
         </motion.div>
 
+        {/* Stat cards */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          className="grid gap-4 sm:grid-cols-3"
+          className="grid sm:grid-cols-3"
+          style={{ gap: 20 }}
         >
-          <Card>
-            <CardContent className="pt-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Pending
-                  </p>
-                  <p className="text-2xl font-bold">{pendingCount}</p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/10">
-                  <Clock className="h-5 w-5 text-yellow-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    In Progress
-                  </p>
-                  <p className="text-2xl font-bold">{inProgressCount}</p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                  <AlertTriangle className="h-5 w-5 text-blue-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Resolved
-                  </p>
-                  <p className="text-2xl font-bold">{resolvedCount}</p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard color="amber"   top="#f59e0b" label="Pending"     value={pendingCount}    icon={<Clock size={20} strokeWidth={2} />} />
+          <StatCard color="blue"    top="#3b82f6" label="In Progress" value={inProgressCount} icon={<AlertTriangle size={20} strokeWidth={2} />} />
+          <StatCard color="emerald" top="#10b981" label="Resolved"    value={resolvedCount}   icon={<CheckCircle2 size={20} strokeWidth={2} />} />
         </motion.div>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-        >
-          <Input
+        {/* Search */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+          <input
             placeholder="Search complaints..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
+            className="bg-white text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+            style={{ width: "100%", maxWidth: 400, height: 44, padding: "0 16px", borderRadius: 12, border: CARD_BORDER, fontSize: 15 }}
           />
         </motion.div>
 
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
+              <Skeleton key={i} className="h-28 rounded-2xl" />
             ))}
           </div>
         ) : filteredComplaints.length === 0 ? (
-          <EmptyState
-            icon={FileText}
-            title={searchTerm ? "No matching complaints" : "No complaints yet"}
-            description={
-              searchTerm
-                ? "Try adjusting your search term."
-                : "When you report an issue, it will appear here."
-            }
-            action={
-              !searchTerm ? (
-                <Button onClick={() => setDialogOpen(true)}>
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div
+              className="flex flex-col items-center justify-center text-center mx-auto"
+              style={{ minHeight: 280, maxWidth: 460, gap: 16, padding: "40px 24px" }}
+            >
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(16,185,129,0.10)", color: "#10b981" }}>
+                <FileText size={26} />
+              </div>
+              <div style={{ maxWidth: 380 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                  {searchTerm ? "No matching complaints" : "No complaints yet"}
+                </h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  {searchTerm ? "Try adjusting your search term." : "When you report an issue, it will appear here."}
+                </p>
+              </div>
+              {!searchTerm && (
+                <button
+                  onClick={openNewComplaintDialog}
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, marginTop: 4, boxShadow: SHADOW_REST }}
+                >
+                  <Plus size={16} />
                   File Your First Complaint
-                </Button>
-              ) : undefined
-            }
-          />
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
           <motion.div
             className="space-y-3"
@@ -468,113 +511,114 @@ export default function CustomerComplaints() {
           </motion.div>
         )}
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-5 p-6"
-          >
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            if (open) {
+              setDialogOpen(true);
+            } else {
+              closeNewComplaintDialog();
+            }
+          }}
+        >
+          <form onSubmit={handleSubmit(onSubmit)} style={{ padding: 24 }}>
             <div>
-              <h2 className="text-lg font-semibold">New Complaint</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em" }}>New Complaint</h2>
+              <p style={{ fontSize: 14, color: "#64748b", marginTop: 6 }}>
                 Fill in the details below to submit a food safety complaint.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Restaurant *</label>
+            {/* Restaurant */}
+            <div style={{ marginTop: 24 }}>
+              <label style={LABEL_STYLE}>Restaurant *</label>
               {restaurantsLoading ? (
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-11 w-full rounded-xl" />
               ) : (
                 <select
                   {...register("restaurant_id")}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`cursor-pointer ${FIELD_CLASS}`}
+                  style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
                 >
                   <option value="">Select a restaurant</option>
-                  {restaurants.map((r) => {
-                    return (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                        {r.safety_score !== undefined &&
-                          ` (Score: ${r.safety_score})`}
-                      </option>
-                    );
-                  })}
+                  {restaurants.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                      {r.safety_score !== undefined && ` (Score: ${r.safety_score})`}
+                    </option>
+                  ))}
                 </select>
               )}
               {errors.restaurant_id && (
-                <p className="text-xs text-destructive">
-                  {errors.restaurant_id.message}
-                </p>
+                <p style={{ fontSize: 12, color: "#dc2626", fontWeight: 500, marginTop: 6 }}>{errors.restaurant_id.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Title *</label>
-              <Input
+            {/* Title */}
+            <div style={{ marginTop: 20 }}>
+              <label style={LABEL_STYLE}>Title *</label>
+              <input
                 placeholder="Brief summary of the issue"
+                className={FIELD_CLASS}
+                style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
                 {...register("title")}
               />
               {errors.title && (
-                <p className="text-xs text-destructive">
-                  {errors.title.message}
-                </p>
+                <p style={{ fontSize: 12, color: "#dc2626", fontWeight: 500, marginTop: 6 }}>{errors.title.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Description *</label>
-              <Textarea
+            {/* Description */}
+            <div style={{ marginTop: 20 }}>
+              <label style={LABEL_STYLE}>Description *</label>
+              <textarea
                 placeholder="Provide detailed information about the food safety issue you experienced..."
                 rows={5}
+                className={`resize-y ${FIELD_CLASS}`}
+                style={{ ...FIELD_STYLE, padding: "12px 14px", lineHeight: 1.5 }}
                 {...register("description")}
               />
               {errors.description && (
-                <p className="text-xs text-destructive">
-                  {errors.description.message}
-                </p>
+                <p style={{ fontSize: 12, color: "#dc2626", fontWeight: 500, marginTop: 6 }}>{errors.description.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Priority *</label>
-              <div className="flex flex-wrap gap-2">
+            {/* Priority */}
+            <div style={{ marginTop: 20 }}>
+              <label style={LABEL_STYLE}>Priority *</label>
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
                 {PRIORITY_OPTIONS.map((opt) => (
                   <label
                     key={opt.value}
-                    className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:text-primary"
+                    className="flex cursor-pointer items-center transition-colors duration-200 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 has-[:checked]:text-emerald-700"
+                    style={{ gap: 8, height: 40, padding: "0 14px", borderRadius: 12, border: CARD_BORDER, fontSize: 14, fontWeight: 500, color: "#475569" }}
                   >
-                    <input
-                      type="radio"
-                      value={opt.value}
-                      className="sr-only"
-                      {...register("priority")}
-                    />
-                    <span
-                      className={`h-2 w-2 rounded-full ${opt.color.split(" ")[0]}`}
-                    />
+                    <input type="radio" value={opt.value} className="sr-only" {...register("priority")} />
+                    <span className={`rounded-full ${opt.color.split(" ")[0]}`} style={{ width: 8, height: 8 }} />
                     {opt.label}
                   </label>
                 ))}
               </div>
               {errors.priority && (
-                <p className="text-xs text-destructive">
-                  {errors.priority.message}
-                </p>
+                <p style={{ fontSize: 12, color: "#dc2626", fontWeight: 500, marginTop: 6 }}>{errors.priority.message}</p>
               )}
             </div>
 
-            <DialogFooter>
-              <Button
+            <DialogFooter className="!gap-3 !mt-6 !pt-5">
+              <button
                 type="button"
-                variant="outline"
-                onClick={() => {
-                  setDialogOpen(false);
-                  reset();
-                }}
+                onClick={closeNewComplaintDialog}
+                className="inline-flex items-center justify-center text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors duration-200 cursor-pointer"
+                style={{ height: 44, padding: "0 20px", borderRadius: 12, border: CARD_BORDER }}
               >
                 Cancel
-              </Button>
-              <Button type="submit" disabled={submitting} className="gap-2">
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+              >
                 {submitting ? (
                   <>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -582,11 +626,11 @@ export default function CustomerComplaints() {
                   </>
                 ) : (
                   <>
-                    <Send className="h-4 w-4" />
+                    <Send size={16} />
                     Submit Complaint
                   </>
                 )}
-              </Button>
+              </button>
             </DialogFooter>
           </form>
         </Dialog>

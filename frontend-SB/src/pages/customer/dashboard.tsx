@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import {
@@ -35,6 +35,169 @@ const fadeUp = {
     transition: { delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
   }),
 };
+
+type StatColor = "emerald" | "amber" | "blue" | "purple";
+
+const STAT_STYLES: Record<StatColor, { top: string; iconBg: string; iconText: string; iconBorder: string; iconHover: string; chipBg: string; chipText: string; chipIcon: string }> = {
+  emerald: { top: "#10b981", iconBg: "rgba(16,185,129,0.10)", iconText: "#059669", iconBorder: "rgba(16,185,129,0.20)", iconHover: "#059669", chipBg: "rgba(16,185,129,0.12)", chipText: "#065f46", chipIcon: "#059669" },
+  amber:   { top: "#f59e0b", iconBg: "rgba(245,158,11,0.10)", iconText: "#d97706", iconBorder: "rgba(245,158,11,0.20)", iconHover: "#f59e0b", chipBg: "rgba(245,158,11,0.12)", chipText: "#92400e", chipIcon: "#d97706" },
+  blue:    { top: "#3b82f6", iconBg: "rgba(59,130,246,0.10)", iconText: "#2563eb", iconBorder: "rgba(59,130,246,0.20)", iconHover: "#2563eb", chipBg: "rgba(59,130,246,0.12)", chipText: "#1e40af", chipIcon: "#2563eb" },
+  purple:  { top: "#a855f7", iconBg: "rgba(168,85,247,0.10)", iconText: "#9333ea", iconBorder: "rgba(168,85,247,0.20)", iconHover: "#9333ea", chipBg: "rgba(168,85,247,0.12)", chipText: "#6b21a8", chipIcon: "#9333ea" },
+};
+
+function StatCard({
+  color, custom, label, value, icon, chipIcon, chipLabel, onClick,
+}: {
+  color: StatColor; custom: number; label: string; value: React.ReactNode;
+  icon: React.ReactNode; chipIcon: React.ReactNode; chipLabel: string; onClick?: () => void;
+}) {
+  const s = STAT_STYLES[color];
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={custom}
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{
+        minHeight: 130, borderRadius: 18, padding: 20,
+        border: "1px solid rgba(15,23,42,0.08)", borderTop: `3px solid ${s.top}`,
+        boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+        cursor: onClick ? "pointer" : "default",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(15,23,42,0.08)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,23,42,0.05)"; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div
+          className="flex items-center justify-center shrink-0 transition-colors duration-200"
+          style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, color: s.iconText, border: `1px solid ${s.iconBorder}` }}
+        >
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+      <div>
+        <span
+          className="inline-flex items-center"
+          style={{ gap: 6, padding: "3px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, background: s.chipBg, color: s.chipText }}
+        >
+          <span style={{ color: s.chipIcon, display: "inline-flex" }}>{chipIcon}</span>
+          {chipLabel}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+/* Shared design tokens */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+function Section({
+  custom, icon, iconColor, title, subtitle, right, children,
+}: {
+  custom: number; icon: React.ReactNode; iconColor: string; title: string;
+  subtitle?: string; right?: React.ReactNode; children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial="hidden" animate="visible" variants={fadeUp} custom={custom}
+      className="w-full h-full bg-white flex flex-col"
+      style={{ borderRadius: 18, padding: 24, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 16, marginBottom: 20 }}>
+        <div className="flex items-center" style={{ gap: 12 }}>
+          <div className="flex items-center justify-center shrink-0" style={{ width: 36, height: 36, borderRadius: 10, background: `${iconColor}1a`, color: iconColor }}>
+            {icon}
+          </div>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em", lineHeight: 1.2 }}>{title}</h2>
+            {subtitle && <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 4 }}>{subtitle}</p>}
+          </div>
+        </div>
+        {right}
+      </div>
+      <div className="flex-1 flex flex-col">{children}</div>
+    </motion.div>
+  );
+}
+
+function ViewAllButton({ color, onClick }: { color: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center transition-colors duration-200 cursor-pointer group shrink-0"
+      style={{ gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = `${color}14`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+    >
+      <span>View all</span>
+      <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+    </button>
+  );
+}
+
+function QuickAction({
+  icon, iconColor, title, description, onClick,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; onClick: () => void;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 cursor-pointer flex items-center justify-between"
+      style={{ height: 88, padding: 20, borderRadius: 16, gap: 12, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-center min-w-0" style={{ gap: 14 }}>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: `${iconColor}14`, color: iconColor }}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <h3 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 2 }}>{description}</p>
+        </div>
+      </div>
+      <div
+        className="flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+        style={{ width: 28, height: 28, borderRadius: 999, background: "#f1f5f9", color: "#64748b" }}
+      >
+        <ArrowRight size={14} />
+      </div>
+    </motion.div>
+  );
+}
+
+function EmptyState({
+  icon, iconColor, title, description, button,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; button: React.ReactNode;
+}) {
+  return (
+    <div
+      className="flex flex-1 flex-col items-center justify-center text-center mx-auto"
+      style={{ minHeight: 280, maxWidth: 500, gap: 16, paddingTop: 24, paddingBottom: 24 }}
+    >
+      <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: `${iconColor}14`, color: iconColor }}>
+        {icon}
+      </div>
+      <div style={{ maxWidth: 420 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+        <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>{description}</p>
+      </div>
+      <div style={{ marginTop: 4 }}>{button}</div>
+    </div>
+  );
+}
 
 const SAFETY_TIPS = [
   {
@@ -112,7 +275,7 @@ export default function CustomerDashboard() {
 
   return (
     <DashboardLayout title="Customer Dashboard">
-      <div className="flex flex-col gap-6 sm:gap-8 w-full pb-16">
+      <div className="flex flex-col w-full" style={{ gap: 24 }}>
         
         {/* ─── Hero / Full Width Banner ─── */}
         <motion.div
@@ -120,43 +283,46 @@ export default function CustomerDashboard() {
           animate="visible"
           variants={fadeUp}
           custom={0}
-          className="w-full rounded-xl border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white px-6 sm:px-8 py-6 sm:py-7 shadow-lg relative overflow-hidden shrink-0"
+          className="w-full border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white shadow-lg relative overflow-hidden shrink-0"
+          style={{ borderRadius: 20, padding: 32 }}
         >
           {/* Subtle ambient background glow */}
           <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
           <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between" style={{ gap: 32, minHeight: 132 }}>
+            <div style={{ maxWidth: 700 }}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md" style={{ padding: "6px 14px" }}>
                 <Sparkles size={13} className="text-emerald-400 animate-pulse" />
                 <span>SafeBite Verified Dining Portal</span>
               </div>
-              
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+
+              <h1 className="text-white" style={{ fontSize: 36, fontWeight: 700, lineHeight: "44px", letterSpacing: "-0.02em", marginTop: 16 }}>
                 Welcome back
               </h1>
-              
-              <p className="text-sm text-emerald-100/90 font-normal leading-relaxed">
+
+              <p className="text-emerald-100/90 font-normal" style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
                 Your food safety portal is active. You currently have{" "}
                 <span className="font-bold text-white underline decoration-emerald-400 underline-offset-4">{pendingComplaints} active report{pendingComplaints === 1 ? "" : "s"}</span> and access to real-time hygiene scores across your area.
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-wrap items-center" style={{ gap: 12, marginTop: 24 }}>
                 <button
                   onClick={() => navigate("/customer/complaints/new")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-lg transition-all shadow-md shadow-emerald-950/40 cursor-pointer border border-emerald-400/30 active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-emerald-950/40 hover:shadow-xl cursor-pointer border border-emerald-400/30"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <Plus size={16} strokeWidth={2.5} />
+                  <Plus size={17} strokeWidth={2.5} />
                   <span>Report Issue</span>
                 </button>
 
                 <button
                   onClick={() => navigate("/customer/restaurants")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm rounded-lg transition-all backdrop-blur-md border border-white/20 cursor-pointer active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white font-semibold text-sm transition-all duration-200 backdrop-blur-md border border-white/25 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <Search size={16} strokeWidth={2} />
+                  <Search size={17} strokeWidth={2} />
                   <span>Explore Restaurants</span>
                 </button>
               </div>
@@ -164,7 +330,7 @@ export default function CustomerDashboard() {
 
             {/* Right: SaaS Live Status Graphic */}
             <div className="hidden lg:block shrink-0">
-              <div className="w-64 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 p-3.5 text-white shadow-md space-y-2.5">
+              <div className="bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-md space-y-2.5" style={{ width: 340, padding: 20, borderRadius: 16 }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -200,288 +366,108 @@ export default function CustomerDashboard() {
 
         {/* ─── Statistic Cards Row ─── */}
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0" style={{ gap: 20 }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
+              <Skeleton key={i} className="h-[130px] rounded-[18px]" />
             ))}
           </div>
         ) : (
           <motion.div
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            style={{ gap: 20 }}
             initial="hidden"
             animate="visible"
           >
-            {/* Stat 1 */}
-            <motion.div
-              variants={fadeUp}
-              custom={1}
-              whileHover={{ y: -2 }}
+            <StatCard
+              color="emerald" custom={1}
+              label="Nearby Restaurants" value={restaurants.length}
+              icon={<MapPin size={20} strokeWidth={2} />}
+              chipIcon={<TrendingUp size={12} />} chipLabel="Verified in area"
               onClick={() => navigate("/customer/restaurants")}
-              className="group rounded-xl border-t-4 border-t-emerald-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-emerald-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-emerald-800/80 uppercase tracking-wider truncate">
-                    Nearby Restaurants
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {restaurants.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <MapPin size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-100/70 text-emerald-800 text-[11px] font-semibold">
-                  <TrendingUp size={12} className="text-emerald-600" />
-                  Verified in area
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 2 */}
-            <motion.div
-              variants={fadeUp}
-              custom={2}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="amber" custom={2}
+              label="Complaints Submitted" value={complaints.length}
+              icon={<AlertTriangle size={20} strokeWidth={2} />}
+              chipIcon={<Info size={12} />} chipLabel={`${pendingComplaints} pending review`}
               onClick={() => navigate("/customer/complaints")}
-              className="group rounded-xl border-t-4 border-t-amber-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-amber-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-amber-800/80 uppercase tracking-wider truncate">
-                    Complaints Submitted
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {complaints.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <AlertTriangle size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-100/70 text-amber-800 text-[11px] font-semibold">
-                  <Info size={12} className="text-amber-600" />
-                  {pendingComplaints} pending review
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 3 */}
-            <motion.div
-              variants={fadeUp}
-              custom={3}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="blue" custom={3}
+              label="Notifications" value={0}
+              icon={<Bell size={20} strokeWidth={2} />}
+              chipIcon={<ShieldCheck size={12} />} chipLabel="No new alerts"
               onClick={() => navigate("/customer/notifications")}
-              className="group rounded-xl border-t-4 border-t-blue-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-blue-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-blue-800/80 uppercase tracking-wider truncate">
-                    Notifications
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    0
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <Bell size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-100/70 text-blue-800 text-[11px] font-semibold">
-                  <ShieldCheck size={12} className="text-blue-600" />
-                  No new alerts
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 4 */}
-            <motion.div
-              variants={fadeUp}
-              custom={4}
-              whileHover={{ y: -2 }}
-              className="group rounded-xl border-t-4 border-t-purple-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-purple-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-purple-400 transition-all duration-200 flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-purple-800/80 uppercase tracking-wider truncate">
-                    Safety Tips
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {SAFETY_TIPS.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <ShieldCheck size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-purple-100/70 text-purple-800 text-[11px] font-semibold">
-                  <Sparkles size={12} className="text-purple-600" />
-                  Tips available
-                </span>
-              </div>
-            </motion.div>
+            />
+            <StatCard
+              color="purple" custom={4}
+              label="Safety Tips" value={SAFETY_TIPS.length}
+              icon={<ShieldCheck size={20} strokeWidth={2} />}
+              chipIcon={<Sparkles size={12} />} chipLabel="Tips available"
+            />
           </motion.div>
         )}
 
-        {/* ─── Section 1: Quick Actions (Full Width Container) ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Section 1: Quick Actions ─── */}
+        <Section
           custom={5}
-          className="w-full rounded-xl border border-slate-200/80 bg-white/80 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<Sparkles size={18} />} iconColor="#10b981"
+          title="Quick Actions"
+          right={<span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8" }}>Fast Access</span>}
         >
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                <Sparkles size={16} />
-              </div>
-              Quick Actions
-            </h2>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fast Access</span>
-          </div>
-
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-            {/* Action 1 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 20 }}>
+            <QuickAction
+              icon={<Plus size={20} strokeWidth={2.5} />} iconColor="#ef4444"
+              title="Report Issue" description="File a food safety complaint directly"
               onClick={() => navigate("/customer/complaints/new")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-red-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 border border-red-100 flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all duration-200">
-                  <Plus size={20} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors truncate">
-                    Report Issue
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    File a food safety complaint directly
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-red-50 group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Action 2 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<Search size={18} strokeWidth={2.5} />} iconColor="#10b981"
+              title="Find Restaurants" description="Browse dining spots by safety scores"
               onClick={() => navigate("/customer/restaurants")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                  <Search size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors truncate">
-                    Find Restaurants
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Browse dining spots by safety scores
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Action 3 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<FileText size={18} strokeWidth={2.5} />} iconColor="#d97706"
+              title="View Complaints" description="Track updates on your submitted reports"
               onClick={() => navigate("/customer/complaints")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all duration-200">
-                  <FileText size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
-                    View Complaints
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Track updates on your submitted reports
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-amber-50 group-hover:text-amber-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
+            />
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ─── Section 2: Nearby Restaurants (Full Width Container) ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Sections 2 & 3: Nearby Restaurants + Recent Complaints (side by side) ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch" style={{ gap: 24 }}>
+        {/* ─── Section 2: Nearby Restaurants ─── */}
+        <Section
           custom={6}
-          className="w-full rounded-xl border border-emerald-500/15 bg-gradient-to-b from-emerald-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<Compass size={18} />} iconColor="#10b981"
+          title="Nearby Restaurants"
+          subtitle="Verified food safety inspection scores in your immediate area"
+          right={<ViewAllButton color="#059669" onClick={() => navigate("/customer/restaurants")} />}
         >
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                  <Compass size={16} />
-                </div>
-                Nearby Restaurants
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                Verified food safety inspection scores in your immediate area
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/customer/restaurants")}
-              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-emerald-50"
-            >
-              <span>View all</span>
-              <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
-
           {loading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 20 }}>
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-56 rounded-xl" />
+                <Skeleton key={i} className="h-56 rounded-2xl" />
               ))}
             </div>
           ) : restaurants.length === 0 ? (
-            <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs shrink-0">
-                <Compass size={24} />
-              </div>
-              <div className="space-y-1 max-w-md">
-                <h3 className="text-sm font-bold text-slate-900">
-                  No restaurants found in your area
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Enable location access to discover nearby restaurants, or browse all verified dining options across the city.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate("/customer/restaurants")}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-all shadow-md active:scale-95 cursor-pointer mt-1"
-              >
-                <span>Explore All Restaurants</span>
-                <ArrowRight size={14} />
-              </button>
-            </div>
+            <EmptyState
+              icon={<Compass size={26} />} iconColor="#10b981"
+              title="No restaurants found in your area"
+              description="Enable location access to discover nearby restaurants, or browse all verified dining options across the city."
+              button={
+                <button
+                  onClick={() => navigate("/customer/restaurants")}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+                >
+                  <span>Explore All Restaurants</span>
+                  <ArrowRight size={16} />
+                </button>
+              }
+            />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 20 }}>
               {restaurants.map((restaurant, i) => (
                 <motion.div
                   key={restaurant.id}
@@ -505,78 +491,57 @@ export default function CustomerDashboard() {
               ))}
             </div>
           )}
-        </motion.div>
+        </Section>
 
-        {/* ─── Section 3: Recent Complaints Preview (Full Width Container) ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Section 3: Recent Complaints ─── */}
+        <Section
           custom={10}
-          className="w-full rounded-xl border border-amber-500/15 bg-gradient-to-b from-amber-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<MessageSquareWarning size={18} />} iconColor="#d97706"
+          title="Your Recent Complaints"
+          subtitle="Live investigation status for your submitted hygiene reports"
+          right={<ViewAllButton color="#d97706" onClick={() => navigate("/customer/complaints")} />}
         >
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <div className="p-1 rounded-md bg-amber-500/10 text-amber-600">
-                  <MessageSquareWarning size={16} />
-                </div>
-                Your Recent Complaints
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                Live investigation status for your submitted hygiene reports
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/customer/complaints")}
-              className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-amber-50"
-            >
-              <span>View all</span>
-              <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          </div>
-
           {loading ? (
             <div className="space-y-3">
-              <Skeleton className="h-16 rounded-lg" />
-              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
             </div>
           ) : complaints.length === 0 ? (
-            <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <CheckCircle2 size={24} />
-              </div>
-              <div className="space-y-1 max-w-sm">
-                <h3 className="text-sm font-bold text-slate-900">No active complaints</h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  You haven't reported any hygiene issues yet.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate("/customer/complaints/new")}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer mt-1"
-              >
-                <Plus size={14} />
-                <span>File a Complaint</span>
-              </button>
-            </div>
+            <EmptyState
+              icon={<CheckCircle2 size={26} />} iconColor="#d97706"
+              title="No active complaints"
+              description="You haven't reported any hygiene issues yet."
+              button={
+                <button
+                  onClick={() => navigate("/customer/complaints/new")}
+                  className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+                >
+                  <Plus size={16} />
+                  <span>File a Complaint</span>
+                </button>
+              }
+            />
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {complaints.slice(0, 3).map((complaint) => (
                 <div
                   key={complaint.id}
                   onClick={() => navigate("/customer/complaints")}
-                  className="group rounded-lg border border-slate-200/90 bg-white p-3.5 hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="group transition-shadow duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  style={{ padding: 16, borderRadius: 12, border: CARD_BORDER, background: "#fff" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
                       <AlertTriangle size={16} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
+                      <h4 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
                         {complaint.title}
                       </h4>
-                      <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 font-medium">
+                      <p className="truncate" style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>
                         {complaint.restaurant_name ? `At ${complaint.restaurant_name}` : complaint.description}
                       </p>
                     </div>
@@ -592,29 +557,17 @@ export default function CustomerDashboard() {
               ))}
             </div>
           )}
-        </motion.div>
+        </Section>
+        </div>
 
-        {/* ─── Section 4: Food Safety Guidelines & Tips (Full Width Container) ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Section 4: Food Safety Guidelines & Tips ─── */}
+        <Section
           custom={11}
-          className="w-full rounded-xl border border-purple-500/15 bg-gradient-to-b from-purple-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<ShieldCheck size={18} />} iconColor="#9333ea"
+          title="Food Safety Guidelines & Tips"
+          subtitle="Essential hygiene advice for safe and healthy dining habits"
         >
-          <div className="pb-2.5 border-b border-slate-200/80">
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="p-1 rounded-md bg-purple-500/10 text-purple-600">
-                <ShieldCheck size={16} />
-              </div>
-              Food Safety Guidelines & Tips
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Essential hygiene advice for safe and healthy dining habits
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3" style={{ gap: 16 }}>
             {SAFETY_TIPS.map((tip, i) => {
               const Icon = tip.icon;
               return (
@@ -626,16 +579,19 @@ export default function CustomerDashboard() {
                   animate="visible"
                   whileHover={{ y: -2 }}
                   transition={{ duration: 0.2 }}
-                  className="group rounded-lg border-l-4 border-l-purple-500 border-t border-r border-b border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-purple-300 transition-all duration-200 flex items-start gap-3.5"
+                  className="group bg-white transition-shadow duration-200 flex items-start"
+                  style={{ minHeight: 110, padding: 20, borderRadius: 16, gap: 14, border: CARD_BORDER, borderLeft: "3px solid #a855f7", boxShadow: SHADOW_REST }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                    <Icon size={18} strokeWidth={2} />
+                  <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(168,85,247,0.10)", color: "#9333ea" }}>
+                    <Icon size={20} strokeWidth={2} />
                   </div>
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
                       {tip.title}
                     </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.5, marginTop: 4 }}>
                       {tip.description}
                     </p>
                   </div>
@@ -643,7 +599,7 @@ export default function CustomerDashboard() {
               );
             })}
           </div>
-        </motion.div>
+        </Section>
 
       </div>
     </DashboardLayout>

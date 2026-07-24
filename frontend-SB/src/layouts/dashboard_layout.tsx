@@ -54,8 +54,11 @@ export default function DashboardLayout({ children, title }: { children: ReactNo
             }}
           />
 
-          {/* Content container */}
-          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-16">
+          {/* Content container — centered, max 1600px, 32px gutters */}
+          <div
+            className="relative z-10 w-full mx-auto pb-24 lg:pb-8"
+            style={{ maxWidth: 1600, paddingLeft: 32, paddingRight: 32, paddingTop: 24 }}
+          >
             {children}
           </div>
         </main>

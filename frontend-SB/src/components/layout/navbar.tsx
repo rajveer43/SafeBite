@@ -95,9 +95,14 @@ export default function Navbar({ onMenuClick, title }: NavbarProps) {
               </div>
               <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
                 {notifications.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <Bell size={24} className="mx-auto text-slate-300 mb-2" />
-                    <p className="text-xs text-slate-500 font-medium">No notifications yet</p>
+                  <div className="flex flex-col items-center justify-center text-center" style={{ padding: "40px 24px", gap: 12 }}>
+                    <div className="flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 14, background: "#f1f5f9", color: "#94a3b8" }}>
+                      <Bell size={22} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>No notifications yet</p>
+                      <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>You're all caught up.</p>
+                    </div>
                   </div>
                 ) : notifications.slice(0, 6).map((n) => (
                   <div
@@ -144,22 +149,26 @@ export default function Navbar({ onMenuClick, title }: NavbarProps) {
           </button>
 
           {showProfile && (
-            <div className="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl shadow-slate-200/80 border border-slate-200 overflow-hidden animate-scale-in z-50">
-              <div className="p-4 border-b border-slate-100 bg-slate-50/60">
-                <div className="flex items-center gap-3">
-                  <Avatar name={user?.name || role || "U"} size="sm" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{user?.name || "User"}</p>
-                    <p className="text-xs text-slate-500 truncate">{user?.email || ""}</p>
-                  </div>
+            <div
+              className="absolute right-0 top-14 bg-white overflow-hidden animate-scale-in z-50"
+              style={{ width: 288, borderRadius: 16, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 12px 32px -8px rgba(15,23,42,0.18)" }}
+            >
+              <div className="flex items-center" style={{ gap: 12, padding: 16, borderBottom: "1px solid rgba(15,23,42,0.06)" }}>
+                <Avatar name={user?.name || role || "U"} size="sm" />
+                <div className="min-w-0">
+                  <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", lineHeight: 1.3 }}>{user?.name || "User"}</p>
+                  <p className="truncate" style={{ fontSize: 13, color: "#64748b", lineHeight: 1.3, marginTop: 2 }}>{user?.email || roleLabel}</p>
                 </div>
               </div>
-              <div className="p-2">
+              <div style={{ padding: 8 }}>
                 <button
                   onClick={() => { logout(); navigate("/login"); }}
-                  className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-xs text-red-600 hover:bg-red-50 transition-all duration-200 font-bold cursor-pointer"
+                  className="flex items-center w-full transition-colors duration-200 cursor-pointer"
+                  style={{ gap: 10, height: 40, padding: "0 12px", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "#dc2626" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <LogOut size={15} /> Sign out
+                  <LogOut size={16} /> Sign out
                 </button>
               </div>
             </div>
