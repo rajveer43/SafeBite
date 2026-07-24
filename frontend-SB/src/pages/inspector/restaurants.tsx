@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,22 +12,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   ShieldCheck,
-  Calendar,
-  Utensils,
   Plus,
   ArrowUpDown,
-  FileText,
-  BadgeAlert,
-  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import DashboardLayout from "@/layouts/dashboard_layout";
 import SafetyScoreBadge from "@/components/common/safety-score";
 import StatusBadge from "@/components/common/status-badge";
-import EmptyState from "@/components/common/empty-state";
 import { useToast } from "@/components/common/toast";
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
-import Badge from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
 import { getRestaurants, updateRestaurantStatus } from "@/services/restaurant_service";
 import type { Restaurant } from "@/types";
@@ -41,6 +33,52 @@ const itemVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0 },
 };
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
+/* Shared design tokens */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+const FIELD_STYLE: React.CSSProperties = {
+  width: "100%", borderRadius: 12, border: CARD_BORDER, fontSize: 15, color: "#0f172a", background: "#fff",
+};
+const FIELD_CLASS = "outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10";
+
+type StatColor = "blue" | "red" | "emerald";
+const STAT_STYLES: Record<StatColor, { top: string; iconBg: string; iconText: string; iconBorder: string }> = {
+  blue:    { top: "#3b82f6", iconBg: "rgba(59,130,246,0.10)", iconText: "#2563eb", iconBorder: "rgba(59,130,246,0.20)" },
+  red:     { top: "#ef4444", iconBg: "rgba(239,68,68,0.10)", iconText: "#dc2626", iconBorder: "rgba(239,68,68,0.20)" },
+  emerald: { top: "#10b981", iconBg: "rgba(16,185,129,0.10)", iconText: "#059669", iconBorder: "rgba(16,185,129,0.20)" },
+};
+
+function StatCard({ color, label, value, icon }: { color: StatColor; label: string; value: number; icon: React.ReactNode }) {
+  const s = STAT_STYLES[color];
+  return (
+    <div
+      className="bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{ minHeight: 130, borderRadius: 18, padding: 20, border: CARD_BORDER, borderTop: `3px solid ${s.top}`, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, color: s.iconText, border: `1px solid ${s.iconBorder}` }}>
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+    </div>
+  );
+}
 
 function CertificateBadge({ status }: { status: string }) {
   if (status === "valid") {
@@ -117,7 +155,7 @@ function RestaurantExpanded({
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="overflow-hidden"
     >
-      <div className="border-t border-slate-100 bg-slate-50/70 p-5 rounded-b-2xl space-y-5">
+      <div className="border-t border-slate-100 bg-slate-50/70 p-5 space-y-5" style={{ borderBottomLeftRadius: 18, borderBottomRightRadius: 18 }}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
           {/* Details */}
           <div className="space-y-2.5">
@@ -178,14 +216,14 @@ function RestaurantExpanded({
               </div>
             )}
 
-            <div className="pt-1 flex items-center gap-2">
-              <Button
-                size="sm"
+            <div className="pt-1">
+              <button
                 onClick={() => navigate(`/inspector/inspections`)}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl text-xs"
+                className="inline-flex w-full items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-colors duration-200 cursor-pointer"
+                style={{ height: 38, borderRadius: 10, fontSize: 12 }}
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" /> Schedule Audit
-              </Button>
+                <Plus size={14} /> Schedule Audit
+              </button>
             </div>
           </div>
 
@@ -197,25 +235,24 @@ function RestaurantExpanded({
             </p>
             <div className="space-y-2 pt-1">
               {status !== "active" && status !== "approved" && (
-                <Button
-                  size="sm"
+                <button
                   disabled={updating}
                   onClick={() => handleUpdateStatus("active")}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs"
+                  className="inline-flex w-full items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors duration-200 cursor-pointer disabled:opacity-60"
+                  style={{ height: 38, borderRadius: 10, fontSize: 12 }}
                 >
-                  <ShieldCheck className="mr-1.5 h-4 w-4" /> Approve Establishment
-                </Button>
+                  <ShieldCheck size={15} /> Approve Establishment
+                </button>
               )}
               {status !== "rejected" && (
-                <Button
-                  size="sm"
-                  variant="outline"
+                <button
                   disabled={updating}
                   onClick={() => handleUpdateStatus("rejected")}
-                  className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 font-bold text-xs rounded-xl"
+                  className="inline-flex w-full items-center justify-center gap-1.5 border border-rose-200 text-rose-700 hover:bg-rose-50 font-semibold transition-colors duration-200 cursor-pointer disabled:opacity-60"
+                  style={{ height: 38, borderRadius: 10, fontSize: 12 }}
                 >
-                  <FileWarning className="mr-1.5 h-4 w-4" /> Reject Establishment
-                </Button>
+                  <FileWarning size={15} /> Reject Establishment
+                </button>
               )}
               {(status === "active" || status === "approved") && (
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 p-2 rounded-lg border border-emerald-200 justify-center">
@@ -289,89 +326,116 @@ export default function RestaurantsPage() {
     setExpandedId((prev) => (String(prev) === String(id) ? null : id));
   };
 
+  const RISK_FILTERS: { key: "all" | "high_risk" | "valid"; label: string; count: number; active: string }[] = [
+    { key: "all", label: "All", count: totalCount, active: "#059669" },
+    { key: "high_risk", label: "High Risk", count: highRiskCount, active: "#e11d48" },
+    { key: "valid", label: "Valid License", count: verifiedCount, active: "#059669" },
+  ];
+
   return (
     <DashboardLayout title="Restaurants">
-      <div className="space-y-8 pb-12">
-        {/* Header Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 p-6 sm:p-8 text-white shadow-xl border border-slate-700/50">
-          <div className="absolute right-0 top-0 -mt-10 -mr-10 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
-              <Building2 className="h-3.5 w-3.5" /> Food Service Directory
+      <div className="flex flex-col w-full" style={{ gap: 24 }}>
+
+        {/* Hero */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="w-full border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white shadow-lg relative overflow-hidden shrink-0"
+          style={{ borderRadius: 20, padding: 32 }}
+        >
+          <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
+
+          <div className="relative z-10" style={{ maxWidth: 720 }}>
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md" style={{ padding: "6px 14px" }}>
+              <Building2 size={13} className="text-emerald-400" />
+              <span>Food Service Directory</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Restaurant Safety Directory</h1>
-            <p className="text-sm text-slate-300 max-w-xl">
+            <h1 className="text-white" style={{ fontSize: 36, fontWeight: 700, lineHeight: "44px", letterSpacing: "-0.02em", marginTop: 16 }}>
+              Restaurant Safety Directory
+            </h1>
+            <p className="text-emerald-100/90 font-normal" style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
               Inspect food establishments, monitor safety compliance ratings, review licenses, and track customer health complaints.
             </p>
           </div>
+        </motion.div>
 
-          {/* Directory Metrics */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 pt-6 border-t border-slate-700/60">
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-              <div className="text-xs font-medium text-slate-300">Registered Restaurants</div>
-              <div className="mt-1 text-2xl font-extrabold text-white">{totalCount}</div>
-            </div>
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-              <div className="text-xs font-medium text-rose-300">High Risk (&lt;60 Score)</div>
-              <div className="mt-1 text-2xl font-extrabold text-rose-400">{highRiskCount}</div>
-            </div>
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-              <div className="text-xs font-medium text-emerald-300">Valid Safety Permits</div>
-              <div className="mt-1 text-2xl font-extrabold text-emerald-400">{verifiedCount}</div>
-            </div>
-          </div>
-        </div>
+        {/* Directory metrics */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="grid sm:grid-cols-3"
+          style={{ gap: 20 }}
+        >
+          <StatCard color="blue"    label="Registered Restaurants" value={totalCount}    icon={<Building2 size={20} strokeWidth={2} />} />
+          <StatCard color="red"     label="High Risk (< 60 Score)" value={highRiskCount} icon={<AlertTriangle size={20} strokeWidth={2} />} />
+          <StatCard color="emerald" label="Valid Safety Permits"   value={verifiedCount} icon={<ShieldCheck size={20} strokeWidth={2} />} />
+        </motion.div>
 
-        {/* Search & Filter Bar */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
+        {/* Search + filter + sort toolbar */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div className="relative w-full lg:max-w-md">
+            <Search size={17} className="absolute top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" style={{ left: 16 }} />
+            <input
               placeholder="Search by restaurant name, area, or cuisine..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2.5 rounded-2xl border-slate-200 bg-white shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 text-slate-900"
+              className={`bg-white ${FIELD_CLASS}`}
+              style={{ ...FIELD_STYLE, height: 44, paddingLeft: 44, paddingRight: 16 }}
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
-              <button
-                onClick={() => setRiskFilter("all")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  riskFilter === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                All ({restaurants.length})
-              </button>
-              <button
-                onClick={() => setRiskFilter("high_risk")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  riskFilter === "high_risk" ? "bg-rose-500 text-white shadow-sm" : "text-slate-600 hover:text-rose-600"
-                }`}
-              >
-                High Risk ({highRiskCount})
-              </button>
-              <button
-                onClick={() => setRiskFilter("valid")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  riskFilter === "valid" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 hover:text-emerald-600"
-                }`}
-              >
-                Valid License ({verifiedCount})
-              </button>
+          <div className="flex flex-wrap items-center" style={{ gap: 12 }}>
+            {/* Risk filter segmented control */}
+            <div className="flex flex-wrap items-center" style={{ gap: 8 }}>
+              {RISK_FILTERS.map(({ key, label, count, active }) => {
+                const isActive = riskFilter === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setRiskFilter(key)}
+                    className="inline-flex items-center transition-all duration-200 cursor-pointer"
+                    style={{
+                      gap: 8, height: 40, padding: "0 14px", borderRadius: 12, fontSize: 14, fontWeight: 600,
+                      border: isActive ? `1px solid ${active}` : CARD_BORDER,
+                      background: isActive ? active : "#fff",
+                      color: isActive ? "#fff" : "#475569",
+                      boxShadow: isActive ? SHADOW_REST : "none",
+                    }}
+                  >
+                    {label}
+                    <span
+                      className="inline-flex items-center justify-center"
+                      style={{
+                        minWidth: 22, height: 20, padding: "0 6px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+                        background: isActive ? "rgba(255,255,255,0.22)" : "#f1f5f9",
+                        color: isActive ? "#fff" : "#64748b",
+                      }}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                <ArrowUpDown className="h-3.5 w-3.5" /> Sort:
+            {/* Sort */}
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <span className="flex items-center text-slate-500" style={{ gap: 4, fontSize: 13, fontWeight: 600 }}>
+                <ArrowUpDown size={14} /> Sort
               </span>
               <select
                 value={sortBy}
                 onChange={(e: any) => setSortBy(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm outline-none focus:border-emerald-500"
+                className={`cursor-pointer ${FIELD_CLASS}`}
+                style={{ ...FIELD_STYLE, height: 40, padding: "0 12px", fontSize: 14, fontWeight: 600 }}
               >
                 <option value="score_desc">Safety Score (High → Low)</option>
                 <option value="score_asc">Safety Score (Low → High)</option>
@@ -379,9 +443,9 @@ export default function RestaurantsPage() {
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Restaurant List Cards */}
+        {/* List / empty */}
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -389,14 +453,25 @@ export default function RestaurantsPage() {
             ))}
           </div>
         ) : filteredRestaurants.length === 0 ? (
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 mb-4">
-              <Building2 className="h-8 w-8" />
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div
+              className="flex flex-col items-center justify-center text-center mx-auto"
+              style={{ minHeight: 280, maxWidth: 460, gap: 16, padding: "40px 24px" }}
+            >
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(59,130,246,0.10)", color: "#2563eb" }}>
+                <Building2 size={26} />
+              </div>
+              <div style={{ maxWidth: 380 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                  {searchQuery || riskFilter !== "all" ? "No restaurants match criteria" : "No restaurants registered yet"}
+                </h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  {searchQuery || riskFilter !== "all"
+                    ? "Try adjusting your search terms or risk filters."
+                    : "Registered establishments will appear here for inspection and review."}
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No restaurants match criteria</h3>
-            <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-              Try adjusting your search terms or risk filters.
-            </p>
           </div>
         ) : (
           <motion.div
@@ -412,13 +487,17 @@ export default function RestaurantsPage() {
 
                 return (
                   <motion.div key={restaurant.id} variants={itemVariants} layout>
-                    <div className="group rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-emerald-300">
+                    <div
+                      className="group bg-white transition-shadow duration-200"
+                      style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+                      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+                    >
                       <div
                         className="p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between cursor-pointer"
                         onClick={() => toggleExpand(restaurant.id)}
                       >
                         <div className="flex items-center gap-4 min-w-0">
-                          {/* Circular Score Badge */}
                           <SafetyCircleScore score={score} />
 
                           <div className="space-y-1 min-w-0">
@@ -452,21 +531,17 @@ export default function RestaurantsPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/inspector/inspections`);
-                            }}
-                            className="rounded-xl text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                        <div className="flex items-center gap-2 justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate(`/inspector/inspections`); }}
+                            className="inline-flex items-center gap-1.5 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold transition-colors duration-200 cursor-pointer"
+                            style={{ height: 36, padding: "0 12px", borderRadius: 10, fontSize: 13 }}
                           >
-                            <Plus className="mr-1 h-3.5 w-3.5" /> Schedule
-                          </Button>
-                          <Button variant="ghost" size="sm" className="rounded-xl text-slate-400 hover:text-slate-700">
-                            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                          </Button>
+                            <Plus size={14} /> Schedule
+                          </button>
+                          <div className="flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-colors" style={{ width: 36, height: 36, borderRadius: 10 }}>
+                            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </div>
                         </div>
                       </div>
 

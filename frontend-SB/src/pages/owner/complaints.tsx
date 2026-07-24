@@ -1,10 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/layouts/dashboard_layout";
-import PageHeader from "@/components/common/page-header";
 import StatusBadge from "@/components/common/status-badge";
-import EmptyState from "@/components/common/empty-state";
-import Button from "@/components/ui/button";
-import Card, { CardContent } from "@/components/ui/card";
 import Dialog, { DialogFooter } from "@/components/ui/dialog";
 import Skeleton from "@/components/ui/skeleton";
 import { useToast } from "@/components/common/toast";
@@ -30,6 +26,16 @@ const item = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0 },
 };
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
+/* Shared design tokens (matches customer/owner dashboard) */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
 
 const STATUS_TIMELINE: Record<string, { label: string; icon: any; color: string }[]> = {
   pending: [
@@ -67,32 +73,28 @@ function StatusTimeline({ status }: { status: string }) {
   const steps = STATUS_TIMELINE[status] ?? STATUS_TIMELINE.pending;
 
   return (
-    <div className="mt-4">
-      <h4 className="text-sm font-medium mb-3">Status Timeline</h4>
+    <div style={{ marginTop: 4 }}>
+      <h4 style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b", marginBottom: 14 }}>
+        Status Timeline
+      </h4>
       <div className="relative ml-1">
-        <div className="absolute left-[11px] top-0 bottom-0 w-px bg-border" />
+        <div className="absolute left-[11px] top-1 bottom-1 w-px bg-slate-200" />
         <div className="space-y-4">
           {steps.map((step, i) => {
             const Icon = step.icon;
             const isActive = i === steps.length - 1;
             return (
-              <div key={i} className="flex items-start gap-3 relative">
+              <div key={i} className="flex items-center gap-3 relative">
                 <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full border-2 bg-background z-10 ${
-                    isActive ? "border-primary" : "border-border"
+                  className={`flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white z-10 ${
+                    isActive ? "border-emerald-500" : "border-slate-200"
                   }`}
                 >
                   <Icon className={`h-3 w-3 ${step.color}`} />
                 </div>
-                <div>
-                  <p
-                    className={`text-sm ${
-                      isActive ? "font-medium" : "text-muted-foreground"
-                    }`}
-                  >
-                    {step.label}
-                  </p>
-                </div>
+                <p style={{ fontSize: 14, fontWeight: isActive ? 600 : 400, color: isActive ? "#0f172a" : "#64748b" }}>
+                  {step.label}
+                </p>
               </div>
             );
           })}
@@ -101,6 +103,14 @@ function StatusTimeline({ status }: { status: string }) {
     </div>
   );
 }
+
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "in_review", label: "In Review" },
+  { key: "resolved", label: "Resolved" },
+  { key: "dismissed", label: "Dismissed" },
+] as const;
 
 export default function OwnerComplaints() {
   const { toast } = useToast();
@@ -136,7 +146,7 @@ export default function OwnerComplaints() {
       ? complaints
       : complaints.filter((c) => c.status === filter);
 
-  const statusCounts = {
+  const statusCounts: Record<string, number> = {
     all: complaints.length,
     pending: complaints.filter((c) => c.status === "pending").length,
     in_review: complaints.filter((c) => c.status === "in_review").length,
@@ -146,99 +156,134 @@ export default function OwnerComplaints() {
 
   return (
     <DashboardLayout title="Complaints">
-      <div className="space-y-6">
-        <PageHeader
-          title="Complaints"
-          description="View complaints about your restaurants"
-        />
+      <div className="flex flex-col" style={{ gap: 24 }}>
+        {/* Header */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+          <h1 style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+            Complaints
+          </h1>
+          <p style={{ fontSize: 15, color: "#64748b", marginTop: 6 }}>
+            View and respond to complaints filed against your restaurants.
+          </p>
+        </motion.div>
 
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(statusCounts).map(([key, count]) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                filter === key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {key.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-              <span className="ml-1 text-xs opacity-70">({count})</span>
-            </button>
-          ))}
-        </div>
+        {/* Filter tabs */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="flex flex-wrap"
+          style={{ gap: 8 }}
+        >
+          {FILTERS.map(({ key, label }) => {
+            const active = filter === key;
+            const count = statusCounts[key] ?? 0;
+            return (
+              <button
+                key={key}
+                onClick={() => setFilter(key)}
+                className="inline-flex items-center transition-all duration-200 cursor-pointer"
+                style={{
+                  gap: 8, height: 40, padding: "0 16px", borderRadius: 12, fontSize: 14, fontWeight: 600,
+                  border: active ? "1px solid #10b981" : CARD_BORDER,
+                  background: active ? "#059669" : "#fff",
+                  color: active ? "#fff" : "#475569",
+                  boxShadow: active ? SHADOW_REST : "none",
+                }}
+              >
+                {label}
+                <span
+                  className="inline-flex items-center justify-center"
+                  style={{
+                    minWidth: 22, height: 20, padding: "0 6px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+                    background: active ? "rgba(255,255,255,0.22)" : "#f1f5f9",
+                    color: active ? "#fff" : "#64748b",
+                  }}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </motion.div>
 
+        {/* List / empty */}
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+              <Skeleton key={i} className="h-24 w-full rounded-2xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={AlertTriangle}
-            title={filter === "all" ? "No complaints" : `No ${filter} complaints`}
-            description="Your restaurants are complaint-free!"
-          />
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div
+              className="flex flex-col items-center justify-center text-center mx-auto"
+              style={{ minHeight: 280, maxWidth: 460, gap: 16, padding: "40px 24px" }}
+            >
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(16,185,129,0.10)", color: "#10b981" }}>
+                <CheckCircle size={26} />
+              </div>
+              <div style={{ maxWidth: 380 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                  {filter === "all" ? "No complaints yet" : `No ${filter.replace("_", " ")} complaints`}
+                </h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  {filter === "all"
+                    ? "Your restaurants are complaint-free. New reports from customers will appear here."
+                    : "Try switching to a different filter to see other complaints."}
+                </p>
+              </div>
+            </div>
+          </div>
         ) : (
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="space-y-3"
-          >
+          <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
             <AnimatePresence>
               {filtered.map((complaint) => (
-                <motion.div
-                  key={complaint.id}
-                  variants={item}
-                  layout
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <Card
-                    className="hover:shadow-md transition-shadow cursor-pointer"
+                <motion.div key={complaint.id} variants={item} layout exit={{ opacity: 0, x: -20 }}>
+                  <div
                     onClick={() => openDetail(complaint)}
+                    className="group bg-white transition-shadow duration-200 cursor-pointer"
+                    style={{ borderRadius: 14, padding: 16, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 shrink-0 mt-0.5">
-                            <AlertTriangle className="h-5 w-5 text-destructive" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-medium text-sm truncate">
-                              {complaint.title ?? (complaint as Record<string, any>).category ?? "Complaint"}
-                            </h3>
-                            <p className="text-muted-foreground text-xs line-clamp-2 mt-0.5">
-                              {complaint.description}
-                            </p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                              {complaint.restaurant_name && (
-                                <span className="flex items-center gap-1">
-                                  <Store className="h-3 w-3" />
-                                  {complaint.restaurant_name}
-                                </span>
-                              )}
-                              {(complaint as Record<string, any>).user_name && (
-                                <span className="flex items-center gap-1">
-                                  <User className="h-3 w-3" />
-                                  {(complaint as Record<string, any>).user_name}
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {new Date(
-                                  complaint.created_at ?? (complaint as Record<string, any>).timestamp ?? ""
-                                ).toLocaleDateString()}
+                    <div className="flex items-start justify-between" style={{ gap: 16 }}>
+                      <div className="flex items-start min-w-0 flex-1" style={{ gap: 12 }}>
+                        <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(239,68,68,0.08)", color: "#dc2626", marginTop: 2 }}>
+                          <AlertTriangle size={18} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
+                            {complaint.title ?? (complaint as Record<string, any>).category ?? "Complaint"}
+                          </h3>
+                          <p className="line-clamp-2" style={{ fontSize: 14, color: "#64748b", marginTop: 2, lineHeight: 1.5 }}>
+                            {complaint.description}
+                          </p>
+                          <div className="flex flex-wrap items-center" style={{ gap: 14, marginTop: 8, fontSize: 13, color: "#94a3b8" }}>
+                            {complaint.restaurant_name && (
+                              <span className="flex items-center gap-1.5">
+                                <Store size={13} />
+                                {complaint.restaurant_name}
                               </span>
-                            </div>
+                            )}
+                            {(complaint as Record<string, any>).user_name && (
+                              <span className="flex items-center gap-1.5">
+                                <User size={13} />
+                                {(complaint as Record<string, any>).user_name}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1.5">
+                              <Clock size={13} />
+                              {new Date(complaint.created_at ?? (complaint as Record<string, any>).timestamp ?? "").toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
+                      </div>
+                      <div className="shrink-0">
                         <StatusBadge status={complaint.status ?? "pending"} />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -246,114 +291,96 @@ export default function OwnerComplaints() {
         )}
       </div>
 
+      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setDetailOpen(false)}
-          />
-          <div className="relative bg-background rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 space-y-4 z-10">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Complaint Details</h2>
-              <Button
-                variant="ghost"
-                size="xs"
-                className="h-8 w-8"
-                onClick={() => setDetailOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+        <div style={{ padding: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em" }}>Complaint Details</h2>
+            <button
+              onClick={() => setDetailOpen(false)}
+              className="flex items-center justify-center transition-colors duration-200 cursor-pointer text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              style={{ width: 32, height: 32, borderRadius: 10 }}
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-            {selectedComplaint && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10">
-                    <AlertTriangle className="h-6 w-6 text-destructive" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      {selectedComplaint.title ??
-                        (selectedComplaint as Record<string, any>).category ??
-                        "Complaint"}
-                    </h3>
+          {selectedComplaint && (
+            <div className="flex flex-col" style={{ gap: 20 }}>
+              <div className="flex items-center" style={{ gap: 12 }}>
+                <div className="flex items-center justify-center shrink-0" style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(239,68,68,0.08)", color: "#dc2626" }}>
+                  <AlertTriangle size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="truncate" style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                    {selectedComplaint.title ?? (selectedComplaint as Record<string, any>).category ?? "Complaint"}
+                  </h3>
+                  <div style={{ marginTop: 4 }}>
                     <StatusBadge status={selectedComplaint.status ?? "pending"} />
                   </div>
                 </div>
+              </div>
 
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <p className="text-sm">{selectedComplaint.description}</p>
-                </div>
+              <div style={{ borderRadius: 12, background: "#f8fafc", border: CARD_BORDER, padding: 16 }}>
+                <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.6 }}>{selectedComplaint.description}</p>
+              </div>
 
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  {selectedComplaint.restaurant_name && (
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">
-                        Restaurant
-                      </p>
-                      <p className="font-medium flex items-center gap-1.5">
-                        <Store className="h-4 w-4 text-muted-foreground" />
-                        {selectedComplaint.restaurant_name}
-                      </p>
-                    </div>
-                  )}
-                  {(selectedComplaint as Record<string, any>).user_name && (
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">
-                        Filed By
-                      </p>
-                      <p className="font-medium flex items-center gap-1.5">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        {(selectedComplaint as Record<string, any>).user_name}
-                      </p>
-                    </div>
-                  )}
+              <div className="grid grid-cols-2" style={{ gap: 16 }}>
+                {selectedComplaint.restaurant_name && (
                   <div>
-                    <p className="text-muted-foreground text-xs mb-1">
-                      Date Filed
-                    </p>
-                    <p className="font-medium">
-                      {new Date(
-                        selectedComplaint.created_at ??
-                          (selectedComplaint as Record<string, any>).timestamp ??
-                          ""
-                      ).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {(selectedComplaint as Record<string, any>).category && (
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">
-                        Category
-                      </p>
-                      <p className="font-medium">{(selectedComplaint as Record<string, any>).category}</p>
-                    </div>
-                  )}
-                </div>
-
-                <StatusTimeline status={selectedComplaint.status ?? "pending"} />
-
-                {(selectedComplaint as Record<string, any>).owner_response && (
-                  <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                    <p className="text-xs text-green-700 font-medium mb-1">
-                      Your Response
-                    </p>
-                    <p className="text-sm text-green-800">
-                      {(selectedComplaint as Record<string, any>).owner_response}
+                    <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Restaurant</p>
+                    <p className="flex items-center" style={{ gap: 6, fontSize: 14, fontWeight: 500, color: "#0f172a" }}>
+                      <Store size={15} className="text-slate-400" />
+                      {selectedComplaint.restaurant_name}
                     </p>
                   </div>
                 )}
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setDetailOpen(false)}
-                  >
-                    Close
-                  </Button>
-                </DialogFooter>
+                {(selectedComplaint as Record<string, any>).user_name && (
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Filed By</p>
+                    <p className="flex items-center" style={{ gap: 6, fontSize: 14, fontWeight: 500, color: "#0f172a" }}>
+                      <User size={15} className="text-slate-400" />
+                      {(selectedComplaint as Record<string, any>).user_name}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Date Filed</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>
+                    {new Date(selectedComplaint.created_at ?? (selectedComplaint as Record<string, any>).timestamp ?? "").toLocaleDateString()}
+                  </p>
+                </div>
+                {(selectedComplaint as Record<string, any>).category && (
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 6 }}>Category</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#0f172a" }}>{(selectedComplaint as Record<string, any>).category}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              <StatusTimeline status={selectedComplaint.status ?? "pending"} />
+
+              {(selectedComplaint as Record<string, any>).owner_response && (
+                <div style={{ borderRadius: 12, border: "1px solid rgba(16,185,129,0.25)", background: "rgba(16,185,129,0.06)", padding: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#059669", marginBottom: 6 }}>Your Response</p>
+                  <p style={{ fontSize: 14, color: "#065f46", lineHeight: 1.6 }}>
+                    {(selectedComplaint as Record<string, any>).owner_response}
+                  </p>
+                </div>
+              )}
+
+              <DialogFooter className="!gap-3 !mt-2 !pt-5">
+                <button
+                  type="button"
+                  onClick={() => setDetailOpen(false)}
+                  className="inline-flex items-center justify-center text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, border: CARD_BORDER }}
+                >
+                  Close
+                </button>
+              </DialogFooter>
+            </div>
+          )}
         </div>
       </Dialog>
     </DashboardLayout>

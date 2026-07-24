@@ -1,13 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/layouts/dashboard_layout";
-import PageHeader from "@/components/common/page-header";
-import SearchBar from "@/components/common/search-bar";
-import EmptyState from "@/components/common/empty-state";
 import StatusBadge from "@/components/common/status-badge";
 import SafetyScoreBadge from "@/components/common/safety-score";
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
-import Textarea from "@/components/ui/textarea";
 import Dialog, { DialogFooter } from "@/components/ui/dialog";
 import Skeleton from "@/components/ui/skeleton";
 import { useToast } from "@/components/common/toast";
@@ -29,6 +23,7 @@ import {
   Loader2,
   MapPinned,
   Building2,
+  Search,
   ChevronRight,
   ShieldCheck,
   Sparkles,
@@ -64,6 +59,20 @@ const fadeUp = {
     transition: { delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
   }),
 };
+
+/* Shared design tokens (matches customer/owner dashboard) */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+const FIELD_STYLE: React.CSSProperties = {
+  width: "100%", borderRadius: 12, border: CARD_BORDER, fontSize: 15, color: "#0f172a", background: "#fff",
+};
+const FIELD_CLASS = "outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10";
+const LABEL_STYLE: React.CSSProperties = {
+  display: "block", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b", marginBottom: 8,
+};
+const ERROR_STYLE: React.CSSProperties = { fontSize: 12, color: "#dc2626", fontWeight: 500, marginTop: 6 };
 
 export default function OwnerRestaurants() {
   const navigate = useNavigate();
@@ -203,62 +212,104 @@ export default function OwnerRestaurants() {
 
   return (
     <DashboardLayout title="My Restaurants">
-      <div className="flex flex-col gap-6 sm:gap-8 w-full pb-16">
-        
-        {/* Page Header with Primary Action Button */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <PageHeader
-            title="My Managed Establishments"
-            description="Register, inspect, and update your business locations"
-          />
+      <div className="flex flex-col" style={{ gap: 24 }}>
+
+        {/* Header */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          custom={0}
+          className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h1 style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              My Managed Establishments
+            </h1>
+            <p style={{ fontSize: 15, color: "#64748b", marginTop: 6 }}>
+              Register, inspect, and update your business locations.
+            </p>
+          </div>
           <button
             onClick={openCreateDialog}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-lg transition-all shadow-md shadow-emerald-950/20 cursor-pointer border border-emerald-400/30 active:scale-95 shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer shrink-0"
+            style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
           >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>Add Restaurant</span>
+            <Plus size={17} strokeWidth={2.5} />
+            Add Restaurant
           </button>
-        </div>
+        </motion.div>
 
-        {/* Search & Statistics Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200/80 bg-white/80 p-4 shadow-xs">
-          <div className="w-full sm:max-w-md">
-            <SearchBar
+        {/* Search + count */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          custom={1}
+          className="flex flex-col sm:flex-row sm:items-center" style={{ gap: 12 }}
+        >
+          <div className="relative w-full sm:max-w-md">
+            <Search size={17} className="absolute top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" style={{ left: 16 }} />
+            <input
               value={search}
-              onChange={setSearch}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search establishments by name or location..."
+              className={`bg-white ${FIELD_CLASS}`}
+              style={{ ...FIELD_STYLE, height: 44, paddingLeft: 44, paddingRight: 16 }}
             />
           </div>
-          <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-100 text-slate-700">
-              <Building2 size={13} className="text-slate-500" />
-              {filtered.length} Location{filtered.length === 1 ? "" : "s"}
-            </span>
-          </div>
-        </div>
+          <span
+            className="inline-flex items-center self-start sm:self-auto"
+            style={{ gap: 6, height: 32, padding: "0 12px", borderRadius: 10, background: "#f1f5f9", fontSize: 13, fontWeight: 600, color: "#475569" }}
+          >
+            <Building2 size={14} className="text-slate-500" />
+            {filtered.length} Location{filtered.length === 1 ? "" : "s"}
+          </span>
+        </motion.div>
 
-        {/* Restaurant Cards Container */}
+        {/* Cards / empty */}
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-56 rounded-xl" />
+              <Skeleton key={i} className="h-56 rounded-2xl" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={Store}
-            title={search ? "No restaurants found" : "No restaurants added yet"}
-            description={
-              search
-                ? "Try adjusting your search query to find your establishment."
-                : "Register your first restaurant establishment to start monitoring compliance."
-            }
-          />
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div
+              className="flex flex-col items-center justify-center text-center mx-auto"
+              style={{ minHeight: 280, maxWidth: 460, gap: 16, padding: "40px 24px" }}
+            >
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(16,185,129,0.10)", color: "#10b981" }}>
+                <Store size={26} />
+              </div>
+              <div style={{ maxWidth: 380 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                  {search ? "No restaurants found" : "No restaurants added yet"}
+                </h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  {search
+                    ? "Try adjusting your search query to find your establishment."
+                    : "Register your first restaurant establishment to start monitoring compliance."}
+                </p>
+              </div>
+              {!search && (
+                <button
+                  onClick={openCreateDialog}
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12, marginTop: 4, boxShadow: SHADOW_REST }}
+                >
+                  <Plus size={16} />
+                  Add Your First Restaurant
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
           <motion.div
             initial="hidden"
             animate="visible"
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
           >
             <AnimatePresence>
               {filtered.map((restaurant, idx) => (
@@ -270,20 +321,23 @@ export default function OwnerRestaurants() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   whileHover={{ y: -2 }}
                   onClick={() => navigate(`/restaurant/${restaurant.id}`)}
-                  className="group rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs hover:shadow-md hover:border-emerald-400/80 transition-all duration-200 cursor-pointer flex flex-col justify-between h-full space-y-4"
+                  className="group bg-white transition-shadow duration-200 cursor-pointer flex flex-col h-full"
+                  style={{ borderRadius: 18, padding: 20, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
                 >
-                  <div className="space-y-3">
+                  <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {/* Top Row: Icon, Name, Status & Score */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
+                    <div className="flex items-start justify-between" style={{ gap: 12 }}>
+                      <div className="flex items-center min-w-0 flex-1" style={{ gap: 12 }}>
+                        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(16,185,129,0.10)", color: "#059669" }}>
                           <Store size={20} strokeWidth={2} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-extrabold text-sm text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
+                          <h3 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
                             {restaurant.name}
                           </h3>
-                          <div className="mt-1">
+                          <div style={{ marginTop: 4 }}>
                             <StatusBadge status={restaurant.status || "pending"} />
                           </div>
                         </div>
@@ -298,57 +352,53 @@ export default function OwnerRestaurants() {
 
                     {/* Workflow status guidance note */}
                     {(restaurant.status === "pending" || !restaurant.status) && (
-                      <div className="rounded-lg bg-amber-50 p-2.5 border border-amber-200 text-amber-800 text-[11px] font-medium flex items-center justify-between gap-2">
+                      <div className="flex items-center justify-between" style={{ gap: 8, borderRadius: 10, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.20)", padding: "8px 12px", fontSize: 12, fontWeight: 500, color: "#92400e" }}>
                         <span>⚠️ Submit certificates to trigger inspector review</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate("/owner/certificates");
-                          }}
-                          className="text-[11px] h-6 px-2 text-amber-900 underline font-bold"
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate("/owner/certificates"); }}
+                          className="underline font-bold cursor-pointer shrink-0"
+                          style={{ color: "#78350f" }}
                         >
                           Upload
-                        </Button>
+                        </button>
                       </div>
                     )}
                     {restaurant.status === "under_review" && (
-                      <div className="rounded-lg bg-blue-50 p-2.5 border border-blue-200 text-blue-800 text-[11px] font-medium flex items-center gap-1.5">
+                      <div className="flex items-center" style={{ gap: 8, borderRadius: 10, background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.20)", padding: "8px 12px", fontSize: 12, fontWeight: 500, color: "#1e40af" }}>
                         <Sparkles size={13} className="text-blue-600 shrink-0" />
                         <span>Documents submitted. Awaiting inspector approval.</span>
                       </div>
                     )}
                     {restaurant.status === "rejected" && (
-                      <div className="rounded-lg bg-rose-50 p-2.5 border border-rose-200 text-rose-800 text-[11px] font-medium flex items-center gap-1.5">
+                      <div className="flex items-center" style={{ gap: 8, borderRadius: 10, background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.20)", padding: "8px 12px", fontSize: 12, fontWeight: 500, color: "#9f1239" }}>
                         <FileWarning size={13} className="text-rose-600 shrink-0" />
                         <span>Registration rejected. Please re-upload updated permits.</span>
                       </div>
                     )}
                     {restaurant.assigned_inspector_name && (
-                      <div className="rounded-lg bg-indigo-50 p-2.5 border border-indigo-200 text-indigo-800 text-[11px] font-medium flex items-center gap-1.5">
+                      <div className="flex items-center" style={{ gap: 8, borderRadius: 10, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.20)", padding: "8px 12px", fontSize: 12, fontWeight: 500, color: "#3730a3" }}>
                         <ShieldCheck size={13} className="text-indigo-600 shrink-0" />
                         <span>Assigned Inspector: <strong>{restaurant.assigned_inspector_name}</strong></span>
                       </div>
                     )}
 
                     {/* Details Info */}
-                    <div className="space-y-2 text-xs text-slate-500 pt-1 border-t border-slate-100">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 12, borderTop: "1px solid #f1f5f9" }}>
                       {restaurant.address && (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <div className="flex items-start" style={{ gap: 8, fontSize: 13, color: "#64748b" }}>
+                          <MapPin size={15} className="text-slate-400 shrink-0" style={{ marginTop: 1 }} />
                           <span className="line-clamp-2">{restaurant.address}</span>
                         </div>
                       )}
                       {(restaurant as Record<string, any>).phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <div className="flex items-center" style={{ gap: 8, fontSize: 13, color: "#64748b" }}>
+                          <Phone size={15} className="text-slate-400 shrink-0" />
                           <span>{(restaurant as Record<string, any>).phone}</span>
                         </div>
                       )}
                       {restaurant.latitude != null && restaurant.longitude != null && (
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                          <MapPinned className="h-3.5 w-3.5 shrink-0" />
+                        <div className="flex items-center" style={{ gap: 8, fontSize: 12, color: "#94a3b8" }}>
+                          <MapPinned size={15} className="shrink-0" />
                           <span>
                             {Number(restaurant.latitude).toFixed(4)}, {Number(restaurant.longitude).toFixed(4)}
                           </span>
@@ -358,34 +408,32 @@ export default function OwnerRestaurants() {
                   </div>
 
                   {/* Actions Row */}
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs text-slate-700 hover:text-emerald-600 hover:border-emerald-300"
+                  <div className="flex items-center justify-between" style={{ gap: 8, paddingTop: 16, marginTop: 16, borderTop: "1px solid #f1f5f9" }}>
+                    <div className="flex items-center" style={{ gap: 8 }}>
+                      <button
                         onClick={(e) => openEditDialog(restaurant, e)}
+                        className="inline-flex items-center gap-1.5 text-slate-700 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 transition-colors duration-200 cursor-pointer"
+                        style={{ height: 34, padding: "0 12px", borderRadius: 10, border: CARD_BORDER, fontSize: 13, fontWeight: 600 }}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil size={13} />
                         Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                      </button>
+                      <button
                         onClick={(e) => handleDelete(restaurant.id, e)}
                         disabled={String(deletingId) === String(restaurant.id)}
+                        className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200 transition-colors duration-200 cursor-pointer disabled:opacity-60"
+                        style={{ height: 34, padding: "0 12px", borderRadius: 10, border: CARD_BORDER, fontSize: 13, fontWeight: 600 }}
                       >
                         {String(deletingId) === String(restaurant.id) ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <Loader2 size={13} className="animate-spin" />
                         ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 size={13} />
                         )}
                         Delete
-                      </Button>
+                      </button>
                     </div>
 
-                    <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
+                    <div className="flex items-center justify-center transition-all group-hover:bg-emerald-50 group-hover:text-emerald-600" style={{ width: 28, height: 28, borderRadius: 999, background: "#f1f5f9", color: "#64748b" }}>
                       <ChevronRight size={14} />
                     </div>
                   </div>
@@ -396,128 +444,114 @@ export default function OwnerRestaurants() {
         )}
       </div>
 
-      {/* Modern Modal Dialog */}
+      {/* Register / Edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setDialogOpen(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 z-10 border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <Store size={18} className="text-emerald-600" />
-                {editingRestaurant ? "Edit Restaurant Details" : "Register New Restaurant"}
+        <form onSubmit={handleSubmit(onSubmit)} style={{ padding: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
+            <div className="flex items-center min-w-0" style={{ gap: 12 }}>
+              <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(16,185,129,0.10)", color: "#059669" }}>
+                <Store size={20} />
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em" }}>
+                {editingRestaurant ? "Edit Restaurant" : "Register New Restaurant"}
               </h2>
-              <Button
-                variant="ghost"
-                size="xs"
-                className="h-8 w-8 rounded-full text-slate-400 hover:text-slate-600"
-                onClick={() => setDialogOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block">
-                  Restaurant Name *
-                </label>
-                <Input
-                  placeholder="e.g. Mocha Cafe & Bistro"
-                  {...register("name")}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block">
-                  Street Address *
-                </label>
-                <Textarea
-                  placeholder="Full street address and landmark..."
-                  rows={2}
-                  {...register("address")}
-                />
-                {errors.address && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">
-                    {errors.address.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block">
-                  Phone Number *
-                </label>
-                <Input
-                  placeholder="e.g. 9876543210"
-                  {...register("phone")}
-                />
-                {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">
-                    {errors.phone.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block">
-                    Latitude
-                  </label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="28.6139"
-                    {...register("latitude", { valueAsNumber: true })}
-                  />
-                  {errors.latitude && (
-                    <p className="text-red-500 text-xs mt-1 font-medium">
-                      {errors.latitude.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block">
-                    Longitude
-                  </label>
-                  <Input
-                    type="number"
-                    step="any"
-                    placeholder="77.2090"
-                    {...register("longitude", { valueAsNumber: true })}
-                  />
-                  {errors.longitude && (
-                    <p className="text-red-500 text-xs mt-1 font-medium">
-                      {errors.longitude.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2 border-t border-slate-100">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
-                  {submitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {editingRestaurant ? "Save Changes" : "Create Restaurant"}
-                </Button>
-              </DialogFooter>
-            </form>
+            <button
+              type="button"
+              onClick={() => setDialogOpen(false)}
+              className="flex items-center justify-center transition-colors duration-200 cursor-pointer text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              style={{ width: 32, height: 32, borderRadius: 10 }}
+            >
+              <X size={18} />
+            </button>
           </div>
-        </div>
+
+          {/* Name */}
+          <div>
+            <label style={LABEL_STYLE}>Restaurant Name *</label>
+            <input
+              placeholder="e.g. Mocha Cafe & Bistro"
+              className={FIELD_CLASS}
+              style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
+              {...register("name")}
+            />
+            {errors.name && <p style={ERROR_STYLE}>{errors.name.message}</p>}
+          </div>
+
+          {/* Address */}
+          <div style={{ marginTop: 20 }}>
+            <label style={LABEL_STYLE}>Street Address *</label>
+            <textarea
+              placeholder="Full street address and landmark..."
+              rows={2}
+              className={`resize-y ${FIELD_CLASS}`}
+              style={{ ...FIELD_STYLE, padding: "12px 14px", lineHeight: 1.5 }}
+              {...register("address")}
+            />
+            {errors.address && <p style={ERROR_STYLE}>{errors.address.message}</p>}
+          </div>
+
+          {/* Phone */}
+          <div style={{ marginTop: 20 }}>
+            <label style={LABEL_STYLE}>Phone Number *</label>
+            <input
+              placeholder="e.g. 9876543210"
+              className={FIELD_CLASS}
+              style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
+              {...register("phone")}
+            />
+            {errors.phone && <p style={ERROR_STYLE}>{errors.phone.message}</p>}
+          </div>
+
+          {/* Coordinates */}
+          <div className="grid grid-cols-2" style={{ gap: 12, marginTop: 20 }}>
+            <div>
+              <label style={LABEL_STYLE}>Latitude</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="28.6139"
+                className={FIELD_CLASS}
+                style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
+                {...register("latitude", { valueAsNumber: true })}
+              />
+              {errors.latitude && <p style={ERROR_STYLE}>{errors.latitude.message}</p>}
+            </div>
+            <div>
+              <label style={LABEL_STYLE}>Longitude</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="77.2090"
+                className={FIELD_CLASS}
+                style={{ ...FIELD_STYLE, height: 44, padding: "0 14px" }}
+                {...register("longitude", { valueAsNumber: true })}
+              />
+              {errors.longitude && <p style={ERROR_STYLE}>{errors.longitude.message}</p>}
+            </div>
+          </div>
+
+          <DialogFooter className="!gap-3 !mt-6 !pt-5">
+            <button
+              type="button"
+              onClick={() => setDialogOpen(false)}
+              className="inline-flex items-center justify-center text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors duration-200 cursor-pointer"
+              style={{ height: 44, padding: "0 20px", borderRadius: 12, border: CARD_BORDER }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+            >
+              {submitting && <Loader2 size={16} className="animate-spin" />}
+              {editingRestaurant ? "Save Changes" : "Create Restaurant"}
+            </button>
+          </DialogFooter>
+        </form>
       </Dialog>
     </DashboardLayout>
   );
 }
-

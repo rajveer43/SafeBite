@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import {
@@ -15,9 +15,7 @@ import {
   Search,
   Sparkles,
   ChevronRight,
-  ClipboardCheck,
   Award,
-  FileText,
 } from "lucide-react";
 import DashboardLayout from "@/layouts/dashboard_layout";
 import Skeleton from "@/components/ui/skeleton";
@@ -35,6 +33,169 @@ const fadeUp = {
     transition: { delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
   }),
 };
+
+/* Shared design tokens */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+type StatColor = "amber" | "emerald" | "red" | "purple";
+
+const STAT_STYLES: Record<StatColor, { top: string; iconBg: string; iconText: string; iconBorder: string; chipBg: string; chipText: string; chipIcon: string }> = {
+  amber:   { top: "#f59e0b", iconBg: "rgba(245,158,11,0.10)", iconText: "#d97706", iconBorder: "rgba(245,158,11,0.20)", chipBg: "rgba(245,158,11,0.12)", chipText: "#92400e", chipIcon: "#d97706" },
+  emerald: { top: "#10b981", iconBg: "rgba(16,185,129,0.10)", iconText: "#059669", iconBorder: "rgba(16,185,129,0.20)", chipBg: "rgba(16,185,129,0.12)", chipText: "#065f46", chipIcon: "#059669" },
+  red:     { top: "#ef4444", iconBg: "rgba(239,68,68,0.10)", iconText: "#dc2626", iconBorder: "rgba(239,68,68,0.20)", chipBg: "rgba(239,68,68,0.12)", chipText: "#991b1b", chipIcon: "#dc2626" },
+  purple:  { top: "#a855f7", iconBg: "rgba(168,85,247,0.10)", iconText: "#9333ea", iconBorder: "rgba(168,85,247,0.20)", chipBg: "rgba(168,85,247,0.12)", chipText: "#6b21a8", chipIcon: "#9333ea" },
+};
+
+function StatCard({
+  color, custom, label, value, icon, chipIcon, chipLabel, onClick,
+}: {
+  color: StatColor; custom: number; label: string; value: React.ReactNode;
+  icon: React.ReactNode; chipIcon: React.ReactNode; chipLabel: string; onClick?: () => void;
+}) {
+  const s = STAT_STYLES[color];
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={custom}
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{
+        minHeight: 130, borderRadius: 18, padding: 20,
+        border: CARD_BORDER, borderTop: `3px solid ${s.top}`,
+        boxShadow: SHADOW_REST,
+        cursor: onClick ? "pointer" : "default",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div
+          className="flex items-center justify-center shrink-0"
+          style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, color: s.iconText, border: `1px solid ${s.iconBorder}` }}
+        >
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+      <div>
+        <span
+          className="inline-flex items-center"
+          style={{ gap: 6, padding: "3px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, background: s.chipBg, color: s.chipText }}
+        >
+          <span style={{ color: s.chipIcon, display: "inline-flex" }}>{chipIcon}</span>
+          {chipLabel}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+function Section({
+  custom, icon, iconColor, title, subtitle, right, children,
+}: {
+  custom: number; icon: React.ReactNode; iconColor: string; title: string;
+  subtitle?: string; right?: React.ReactNode; children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial="hidden" animate="visible" variants={fadeUp} custom={custom}
+      className="w-full h-full bg-white flex flex-col"
+      style={{ borderRadius: 18, padding: 24, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 16, marginBottom: 20 }}>
+        <div className="flex items-center" style={{ gap: 12 }}>
+          <div className="flex items-center justify-center shrink-0" style={{ width: 36, height: 36, borderRadius: 10, background: `${iconColor}1a`, color: iconColor }}>
+            {icon}
+          </div>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em", lineHeight: 1.2 }}>{title}</h2>
+            {subtitle && <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 4 }}>{subtitle}</p>}
+          </div>
+        </div>
+        {right}
+      </div>
+      <div className="flex-1 flex flex-col">{children}</div>
+    </motion.div>
+  );
+}
+
+function ViewAllButton({ color, onClick }: { color: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center transition-colors duration-200 cursor-pointer group shrink-0"
+      style={{ gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = `${color}14`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+    >
+      <span>View all</span>
+      <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+    </button>
+  );
+}
+
+function QuickAction({
+  icon, iconColor, title, description, onClick,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; onClick: () => void;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 cursor-pointer flex items-center justify-between"
+      style={{ height: 88, padding: 20, borderRadius: 16, gap: 12, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-center min-w-0" style={{ gap: 14 }}>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: `${iconColor}14`, color: iconColor }}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <h3 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 2 }}>{description}</p>
+        </div>
+      </div>
+      <div
+        className="flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+        style={{ width: 28, height: 28, borderRadius: 999, background: "#f1f5f9", color: "#64748b" }}
+      >
+        <ArrowRight size={14} />
+      </div>
+    </motion.div>
+  );
+}
+
+function EmptyState({
+  icon, iconColor, title, description, button,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; button?: React.ReactNode;
+}) {
+  return (
+    <div
+      className="flex flex-1 flex-col items-center justify-center text-center mx-auto"
+      style={{ minHeight: 280, maxWidth: 500, gap: 16, paddingTop: 24, paddingBottom: 24 }}
+    >
+      <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: `${iconColor}14`, color: iconColor }}>
+        {icon}
+      </div>
+      <div style={{ maxWidth: 420 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+        <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>{description}</p>
+      </div>
+      {button && <div style={{ marginTop: 4 }}>{button}</div>}
+    </div>
+  );
+}
 
 export default function InspectorDashboard() {
   const navigate = useNavigate();
@@ -83,12 +244,7 @@ export default function InspectorDashboard() {
 
   return (
     <DashboardLayout title="Inspector Dashboard">
-      <div className="flex flex-col gap-6 sm:gap-8 w-full pb-16 relative">
-        
-        {/* Subtle Watermark Icons */}
-        <div className="absolute right-4 top-12 opacity-[0.03] pointer-events-none text-slate-900 select-none">
-          <ClipboardCheck size={320} />
-        </div>
+      <div className="flex flex-col w-full" style={{ gap: 24 }}>
 
         {/* ─── Hero / Personalized Welcome Banner ─── */}
         <motion.div
@@ -96,50 +252,54 @@ export default function InspectorDashboard() {
           animate="visible"
           variants={fadeUp}
           custom={0}
-          className="w-full rounded-xl border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white px-6 sm:px-8 py-6 sm:py-7 shadow-lg relative overflow-hidden shrink-0"
+          className="w-full border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white shadow-lg relative overflow-hidden shrink-0"
+          style={{ borderRadius: 20, padding: 32 }}
         >
           {/* Ambient background glow */}
           <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
           <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between" style={{ gap: 32, minHeight: 132 }}>
+            <div style={{ maxWidth: 700 }}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md" style={{ padding: "6px 14px" }}>
                 <Sparkles size={13} className="text-emerald-400 animate-pulse" />
                 <span>SafeBite Inspector Workstation</span>
               </div>
-              
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+
+              <h1 className="text-white" style={{ fontSize: 36, fontWeight: 700, lineHeight: "44px", letterSpacing: "-0.02em", marginTop: 16 }}>
                 Welcome back, {inspectorName}
               </h1>
-              
-              <p className="text-sm text-emerald-100/90 font-normal leading-relaxed">
-                You have <span className="font-bold text-white underline decoration-emerald-400 underline-offset-4">{pending.length} pending audit{pending.length === 1 ? "" : "s"}</span> scheduled. Review upcoming site visits, complete reports, and maintain city-wide food safety standards.
+
+              <p className="text-emerald-100/90 font-normal" style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
+                You have{" "}
+                <span className="font-bold text-white underline decoration-emerald-400 underline-offset-4">{pending.length} pending audit{pending.length === 1 ? "" : "s"}</span> scheduled. Review upcoming site visits, complete reports, and maintain city-wide food safety standards.
               </p>
 
-              {/* Quick Actions in Hero */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center" style={{ gap: 12, marginTop: 24 }}>
                 <button
                   onClick={() => navigate("/inspector/inspections")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-lg transition-all shadow-md shadow-emerald-950/40 cursor-pointer border border-emerald-400/30 active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-emerald-950/40 hover:shadow-xl cursor-pointer border border-emerald-400/30"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <FileSearch size={16} strokeWidth={2.5} />
+                  <FileSearch size={17} strokeWidth={2.5} />
                   <span>View All Inspections</span>
                 </button>
 
                 <button
                   onClick={() => navigate("/inspector/restaurants")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm rounded-lg transition-all backdrop-blur-md border border-white/20 cursor-pointer active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white font-semibold text-sm transition-all duration-200 backdrop-blur-md border border-white/25 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <Search size={16} strokeWidth={2} />
+                  <Search size={17} strokeWidth={2} />
                   <span>Search Restaurants</span>
                 </button>
               </div>
             </div>
 
-            {/* Right: SaaS Workload Badge */}
+            {/* Right: Audit Workload Badge */}
             <div className="hidden lg:block shrink-0">
-              <div className="w-64 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 p-3.5 text-white shadow-md space-y-2.5">
+              <div className="bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-md space-y-2.5" style={{ width: 340, padding: 20, borderRadius: 16 }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -152,7 +312,7 @@ export default function InspectorDashboard() {
                     Active Session
                   </span>
                 </div>
-                
+
                 <div className="flex items-baseline justify-between pt-0.5">
                   <div>
                     <p className="text-xl font-black text-white">{completed.length}</p>
@@ -166,7 +326,7 @@ export default function InspectorDashboard() {
                 </div>
 
                 <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-400 h-full w-[100%] rounded-full shadow-sm" />
+                  <div className="bg-emerald-400 h-full rounded-full shadow-sm" style={{ width: "100%" }} />
                 </div>
               </div>
             </div>
@@ -175,444 +335,219 @@ export default function InspectorDashboard() {
 
         {/* ─── Statistic Cards Row ─── */}
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0" style={{ gap: 20 }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
+              <Skeleton key={i} className="h-[130px] rounded-[18px]" />
             ))}
           </div>
         ) : (
           <motion.div
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            style={{ gap: 20 }}
             initial="hidden"
             animate="visible"
           >
-            {/* Stat 1: Pending Inspections */}
-            <motion.div
-              variants={fadeUp}
-              custom={1}
-              whileHover={{ y: -2 }}
+            <StatCard
+              color="amber" custom={1}
+              label="Pending Inspections" value={pending.length}
+              icon={<Clock size={20} strokeWidth={2} />}
+              chipIcon={<Clock size={12} />} chipLabel={`${inProgress.length} in progress`}
               onClick={() => navigate("/inspector/inspections")}
-              className="group rounded-xl border-t-4 border-t-amber-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-amber-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-amber-800/80 uppercase tracking-wider truncate">
-                    Pending Inspections
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {pending.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <Clock size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-100/70 text-amber-800 text-[11px] font-semibold">
-                  <Clock size={12} className="text-amber-600" />
-                  {inProgress.length} in progress
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 2: Completed Inspections */}
-            <motion.div
-              variants={fadeUp}
-              custom={2}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="emerald" custom={2}
+              label="Completed Audits" value={completed.length}
+              icon={<CheckCircle2 size={20} strokeWidth={2} />}
+              chipIcon={<Award size={12} />} chipLabel="Verified & signed"
               onClick={() => navigate("/inspector/inspections")}
-              className="group rounded-xl border-t-4 border-t-emerald-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-emerald-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-emerald-800/80 uppercase tracking-wider truncate">
-                    Completed Audits
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {completed.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <CheckCircle2 size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-100/70 text-emerald-800 text-[11px] font-semibold">
-                  <Award size={12} className="text-emerald-600" />
-                  Verified & Signed
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 3: Total Complaints */}
-            <motion.div
-              variants={fadeUp}
-              custom={3}
-              whileHover={{ y: -2 }}
-              className="group rounded-xl border-t-4 border-t-red-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-red-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-red-400 transition-all duration-200 flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-red-800/80 uppercase tracking-wider truncate">
-                    Total Complaints
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {totalComplaintsCount}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-red-500/10 text-red-600 border border-red-500/20 flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <AlertTriangle size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-100/70 text-red-800 text-[11px] font-semibold">
-                  <AlertTriangle size={12} className="text-red-600" />
-                  Flagged violations
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 4: Restaurants Inspected */}
-            <motion.div
-              variants={fadeUp}
-              custom={4}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="red" custom={3}
+              label="Total Complaints" value={totalComplaintsCount}
+              icon={<AlertTriangle size={20} strokeWidth={2} />}
+              chipIcon={<AlertTriangle size={12} />} chipLabel="Flagged violations"
+            />
+            <StatCard
+              color="purple" custom={4}
+              label="Restaurants Inspected" value={uniqueRestaurantsCount}
+              icon={<Building2 size={20} strokeWidth={2} />}
+              chipIcon={<ShieldCheck size={12} />} chipLabel="Active coverage"
               onClick={() => navigate("/inspector/restaurants")}
-              className="group rounded-xl border-t-4 border-t-purple-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-purple-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-purple-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-purple-800/80 uppercase tracking-wider truncate">
-                    Restaurants Inspected
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {uniqueRestaurantsCount}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <Building2 size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-purple-100/70 text-purple-800 text-[11px] font-semibold">
-                  <ShieldCheck size={12} className="text-purple-600" />
-                  Active coverage
-                </span>
-              </div>
-            </motion.div>
+            />
           </motion.div>
         )}
 
-        {/* ─── Section 1: Quick Actions (Full Width Container) ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Section 1: Inspector Quick Actions ─── */}
+        <Section
           custom={5}
-          className="w-full rounded-xl border border-slate-200/80 bg-white/80 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<Sparkles size={18} />} iconColor="#10b981"
+          title="Inspector Quick Actions"
+          right={<span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8" }}>Fast Access</span>}
         >
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                <Sparkles size={16} />
-              </div>
-              Inspector Quick Actions
-            </h2>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fast Access</span>
-          </div>
-
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Card 1 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 20 }}>
+            <QuickAction
+              icon={<FileSearch size={18} strokeWidth={2.5} />} iconColor="#10b981"
+              title="View Inspections" description="Browse all assigned audits"
               onClick={() => navigate("/inspector/inspections")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                  <FileSearch size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors truncate">
-                    View Inspections
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Browse all assigned audits
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 2 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<Building2 size={18} strokeWidth={2.5} />} iconColor="#2563eb"
+              title="Search Restaurants" description="Look up establishment records"
               onClick={() => navigate("/inspector/restaurants")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
-                  <Building2 size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                    Search Restaurants
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Look up establishment records
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 3 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<Calendar size={18} strokeWidth={2.5} />} iconColor="#9333ea"
+              title="Schedule Inspection" description="Plan new site evaluation"
               onClick={() => navigate("/inspector/inspections")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-purple-400 transition-all duration-200 cursor-pointer flex flex-row items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-all duration-200">
-                  <Calendar size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors truncate">
-                    Schedule Inspection
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Plan new site evaluation
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-purple-50 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 4 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<RefreshCw size={18} strokeWidth={2.5} className={refreshing ? "animate-spin" : ""} />} iconColor="#64748b"
+              title="Refresh Data" description="Sync latest database records"
               onClick={() => fetchInspections(true)}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-slate-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-slate-800 group-hover:text-white transition-all duration-200">
-                  <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-slate-800 transition-colors truncate">
-                    Refresh Data
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Sync latest database records
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-slate-200 group-hover:text-slate-900 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
+            />
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ─── Grid: Upcoming Inspections & Recent Completed ─── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          
-          {/* Upcoming Inspections Timeline Container */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
+        {/* ─── Sections 2 & 3: Upcoming + Recent Completed (side by side) ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch" style={{ gap: 24 }}>
+
+          {/* ─── Section 2: Upcoming Inspections ─── */}
+          <Section
             custom={6}
-            className="w-full rounded-xl border border-amber-500/15 bg-gradient-to-b from-amber-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4 flex flex-col justify-between"
+            icon={<Calendar size={18} />} iconColor="#d97706"
+            title="Upcoming Inspections"
+            subtitle="Scheduled site evaluations requiring inspector review"
+            right={<ViewAllButton color="#d97706" onClick={() => navigate("/inspector/inspections")} />}
           >
-            <div>
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <div className="p-1 rounded-md bg-amber-500/10 text-amber-600">
-                      <Calendar size={16} />
-                    </div>
-                    Upcoming Inspections
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Scheduled site evaluations requiring inspector review
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate("/inspector/inspections")}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-amber-50"
-                >
-                  <span>View all</span>
-                  <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </button>
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
               </div>
-
-              <div className="mt-4">
-                {loading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-16 rounded-lg" />
-                    <Skeleton className="h-16 rounded-lg" />
-                  </div>
-                ) : upcomingInspections.length === 0 ? (
-                  <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                      <Calendar size={24} />
-                    </div>
-                    <div className="space-y-1 max-w-sm">
-                      <h3 className="text-sm font-bold text-slate-900">No upcoming inspections</h3>
-                      <p className="text-xs text-slate-500 font-medium">
-                        You have no site audits scheduled at this moment.
+            ) : upcomingInspections.length === 0 ? (
+              <EmptyState
+                icon={<Calendar size={26} />} iconColor="#d97706"
+                title="No upcoming inspections"
+                description="You have no site audits scheduled at this moment."
+                button={
+                  <button
+                    onClick={() => navigate("/inspector/inspections")}
+                    className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                    style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+                  >
+                    <Plus size={16} />
+                    Schedule New Inspection
+                  </button>
+                }
+              />
+            ) : (
+              <div className="space-y-3 relative before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
+                {upcomingInspections.map((inspection) => (
+                  <div
+                    key={inspection.id}
+                    onClick={() => navigate("/inspector/inspections")}
+                    className="group relative transition-shadow duration-200 cursor-pointer flex items-center justify-between gap-3"
+                    style={{ paddingLeft: 32, paddingRight: 16, paddingTop: 14, paddingBottom: 14, borderRadius: 12, border: CARD_BORDER, background: "#fff" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white ring-2 ring-amber-100 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
+                        {inspection.restaurant_name ?? `Restaurant #${inspection.restaurant_id}`}
                       </p>
-                    </div>
-                    <button
-                      onClick={() => navigate("/inspector/inspections")}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer mt-1"
-                    >
-                      <Plus size={14} />
-                      <span>Schedule New Inspection</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3 relative before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
-                    {upcomingInspections.map((inspection) => (
-                      <div
-                        key={inspection.id}
-                        onClick={() => navigate("/inspector/inspections")}
-                        className="group relative pl-8 rounded-lg border border-slate-200/90 bg-white p-3.5 hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-                      >
-                        {/* Timeline Bullet Dot */}
-                        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-amber-500 border-2 border-white ring-2 ring-amber-100 shrink-0" />
-                        
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
-                            {inspection.restaurant_name ?? `Restaurant #${inspection.restaurant_id}`}
-                          </p>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 font-medium">
-                            <Calendar className="h-3 w-3 text-slate-400" />
-                            <span>{new Date(inspection.scheduled_date).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <StatusBadge status={inspection.status} />
-                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-amber-50 group-hover:text-amber-600 transition-all">
-                            <ChevronRight size={14} />
-                          </div>
-                        </div>
+                      <div className="flex items-center" style={{ gap: 6, marginTop: 3, fontSize: 13, color: "#64748b" }}>
+                        <Calendar size={13} className="text-slate-400" />
+                        <span>{new Date(inspection.scheduled_date).toLocaleDateString()}</span>
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <StatusBadge status={inspection.status} />
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-amber-50 group-hover:text-amber-600 transition-all">
+                        <ChevronRight size={14} />
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
-          </motion.div>
+            )}
+          </Section>
 
-          {/* Recent Completed Inspections Container */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
+          {/* ─── Section 3: Recent Completed Inspections ─── */}
+          <Section
             custom={7}
-            className="w-full rounded-xl border border-emerald-500/15 bg-gradient-to-b from-emerald-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4 flex flex-col justify-between"
+            icon={<CheckCircle2 size={18} />} iconColor="#059669"
+            title="Recent Completed Inspections"
+            subtitle="Verified audits with final safety scores and signed records"
+            right={<ViewAllButton color="#059669" onClick={() => navigate("/inspector/inspections")} />}
           >
-            <div>
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                      <CheckCircle2 size={16} />
-                    </div>
-                    Recent Completed Inspections
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Verified audits with final safety scores and signed records
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate("/inspector/inspections")}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-emerald-50"
-                >
-                  <span>View all</span>
-                  <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </button>
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
               </div>
-
-              <div className="mt-4">
-                {loading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-16 rounded-lg" />
-                    <Skeleton className="h-16 rounded-lg" />
-                  </div>
-                ) : recentCompleted.length === 0 ? (
-                  <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <CheckCircle2 size={24} />
-                    </div>
-                    <div className="space-y-1 max-w-sm">
-                      <h3 className="text-sm font-bold text-slate-900">No completed audits yet</h3>
-                      <p className="text-xs text-slate-500 font-medium">
-                        Completed inspection reports will be logged here.
+            ) : recentCompleted.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 size={26} />} iconColor="#059669"
+                title="No completed audits yet"
+                description="Completed inspection reports will be logged here."
+                button={
+                  <button
+                    onClick={() => navigate("/inspector/inspections")}
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                    style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+                  >
+                    <FileSearch size={16} />
+                    Review Pending Audits
+                  </button>
+                }
+              />
+            ) : (
+              <div className="space-y-3">
+                {recentCompleted.map((inspection) => (
+                  <div
+                    key={inspection.id}
+                    onClick={() => navigate("/inspector/inspections")}
+                    className="group transition-shadow duration-200 cursor-pointer flex items-center justify-between gap-3"
+                    style={{ padding: 16, borderRadius: 12, border: CARD_BORDER, background: "#fff" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
+                        {inspection.restaurant_name ?? `Restaurant #${inspection.restaurant_id}`}
                       </p>
-                    </div>
-                    <button
-                      onClick={() => navigate("/inspector/inspections")}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer mt-1"
-                    >
-                      <FileSearch size={14} />
-                      <span>Review Pending Audits</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {recentCompleted.map((inspection) => (
-                      <div
-                        key={inspection.id}
-                        onClick={() => navigate("/inspector/inspections")}
-                        className="group rounded-lg border border-slate-200/90 bg-white p-3.5 hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                            {inspection.restaurant_name ?? `Restaurant #${inspection.restaurant_id}`}
-                          </p>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 font-medium">
-                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                            <span>
-                              {inspection.completed_date
-                                ? new Date(inspection.completed_date).toLocaleDateString()
-                                : "Completed"}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          {inspection.score != null ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-700 text-xs font-black border border-emerald-500/20">
-                              <Award size={13} />
-                              {inspection.score}/100
-                            </span>
-                          ) : (
-                            <StatusBadge status="completed" />
-                          )}
-                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
-                            <ChevronRight size={14} />
-                          </div>
-                        </div>
+                      <div className="flex items-center" style={{ gap: 6, marginTop: 3, fontSize: 13, color: "#64748b" }}>
+                        <CheckCircle2 size={13} className="text-emerald-500" />
+                        <span>
+                          {inspection.completed_date
+                            ? new Date(inspection.completed_date).toLocaleDateString()
+                            : "Completed"}
+                        </span>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {inspection.score != null ? (
+                        <span
+                          className="inline-flex items-center"
+                          style={{ gap: 4, padding: "4px 10px", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "rgba(16,185,129,0.12)", color: "#065f46" }}
+                        >
+                          <Award size={13} />
+                          {inspection.score}/100
+                        </span>
+                      ) : (
+                        <StatusBadge status="completed" />
+                      )}
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
+                        <ChevronRight size={14} />
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
-          </motion.div>
+            )}
+          </Section>
 
         </div>
 

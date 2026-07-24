@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import {
@@ -36,6 +36,169 @@ const fadeUp = {
     transition: { delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
   }),
 };
+
+/* Shared design tokens */
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+type StatColor = "emerald" | "amber" | "blue" | "purple";
+
+const STAT_STYLES: Record<StatColor, { top: string; iconBg: string; iconText: string; iconBorder: string; chipBg: string; chipText: string; chipIcon: string }> = {
+  emerald: { top: "#10b981", iconBg: "rgba(16,185,129,0.10)", iconText: "#059669", iconBorder: "rgba(16,185,129,0.20)", chipBg: "rgba(16,185,129,0.12)", chipText: "#065f46", chipIcon: "#059669" },
+  amber:   { top: "#f59e0b", iconBg: "rgba(245,158,11,0.10)", iconText: "#d97706", iconBorder: "rgba(245,158,11,0.20)", chipBg: "rgba(245,158,11,0.12)", chipText: "#92400e", chipIcon: "#d97706" },
+  blue:    { top: "#3b82f6", iconBg: "rgba(59,130,246,0.10)", iconText: "#2563eb", iconBorder: "rgba(59,130,246,0.20)", chipBg: "rgba(59,130,246,0.12)", chipText: "#1e40af", chipIcon: "#2563eb" },
+  purple:  { top: "#a855f7", iconBg: "rgba(168,85,247,0.10)", iconText: "#9333ea", iconBorder: "rgba(168,85,247,0.20)", chipBg: "rgba(168,85,247,0.12)", chipText: "#6b21a8", chipIcon: "#9333ea" },
+};
+
+function StatCard({
+  color, custom, label, value, icon, chipIcon, chipLabel, onClick,
+}: {
+  color: StatColor; custom: number; label: string; value: React.ReactNode;
+  icon: React.ReactNode; chipIcon: React.ReactNode; chipLabel: string; onClick?: () => void;
+}) {
+  const s = STAT_STYLES[color];
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={custom}
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{
+        minHeight: 130, borderRadius: 18, padding: 20,
+        border: CARD_BORDER, borderTop: `3px solid ${s.top}`,
+        boxShadow: SHADOW_REST,
+        cursor: onClick ? "pointer" : "default",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div
+          className="flex items-center justify-center shrink-0"
+          style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, color: s.iconText, border: `1px solid ${s.iconBorder}` }}
+        >
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+      <div>
+        <span
+          className="inline-flex items-center"
+          style={{ gap: 6, padding: "3px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, background: s.chipBg, color: s.chipText }}
+        >
+          <span style={{ color: s.chipIcon, display: "inline-flex" }}>{chipIcon}</span>
+          {chipLabel}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+function Section({
+  custom, icon, iconColor, title, subtitle, right, children,
+}: {
+  custom: number; icon: React.ReactNode; iconColor: string; title: string;
+  subtitle?: string; right?: React.ReactNode; children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      initial="hidden" animate="visible" variants={fadeUp} custom={custom}
+      className="w-full h-full bg-white flex flex-col"
+      style={{ borderRadius: 18, padding: 24, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 16, marginBottom: 20 }}>
+        <div className="flex items-center" style={{ gap: 12 }}>
+          <div className="flex items-center justify-center shrink-0" style={{ width: 36, height: 36, borderRadius: 10, background: `${iconColor}1a`, color: iconColor }}>
+            {icon}
+          </div>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: "#0f172a", letterSpacing: "-0.01em", lineHeight: 1.2 }}>{title}</h2>
+            {subtitle && <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 4 }}>{subtitle}</p>}
+          </div>
+        </div>
+        {right}
+      </div>
+      <div className="flex-1 flex flex-col">{children}</div>
+    </motion.div>
+  );
+}
+
+function ViewAllButton({ color, onClick }: { color: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center transition-colors duration-200 cursor-pointer group shrink-0"
+      style={{ gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = `${color}14`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+    >
+      <span>View all</span>
+      <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+    </button>
+  );
+}
+
+function QuickAction({
+  icon, iconColor, title, description, onClick,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; onClick: () => void;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className="group bg-white transition-shadow duration-200 cursor-pointer flex items-center justify-between"
+      style={{ height: 88, padding: 20, borderRadius: 16, gap: 12, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-center min-w-0" style={{ gap: 14 }}>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: `${iconColor}14`, color: iconColor }}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <h3 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 400, color: "#64748b", marginTop: 2 }}>{description}</p>
+        </div>
+      </div>
+      <div
+        className="flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+        style={{ width: 28, height: 28, borderRadius: 999, background: "#f1f5f9", color: "#64748b" }}
+      >
+        <ArrowRight size={14} />
+      </div>
+    </motion.div>
+  );
+}
+
+function EmptyState({
+  icon, iconColor, title, description, button,
+}: {
+  icon: React.ReactNode; iconColor: string; title: string; description: string; button?: React.ReactNode;
+}) {
+  return (
+    <div
+      className="flex flex-1 flex-col items-center justify-center text-center mx-auto"
+      style={{ minHeight: 280, maxWidth: 500, gap: 16, paddingTop: 24, paddingBottom: 24 }}
+    >
+      <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: `${iconColor}14`, color: iconColor }}>
+        {icon}
+      </div>
+      <div style={{ maxWidth: 420 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>{title}</h3>
+        <p style={{ fontSize: 14, fontWeight: 400, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>{description}</p>
+      </div>
+      {button && <div style={{ marginTop: 4 }}>{button}</div>}
+    </div>
+  );
+}
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();
@@ -104,16 +267,12 @@ export default function OwnerDashboard() {
     return diff > 0 && diff < 30 * 24 * 60 * 60 * 1000;
   }).length;
 
-  const ownerName = user?.name ? user.name.split(" ")[0] : "Establishment Owner";
+  const ownerName = user?.name ? user.name.split(" ")[0] : "Owner";
+  const scorePct = Math.min(100, Math.max(0, Number(avgSafetyScore) || 0));
 
   return (
     <DashboardLayout title="Owner Dashboard">
-      <div className="flex flex-col gap-6 sm:gap-8 w-full pb-16 relative">
-        
-        {/* Subtle Watermark Background */}
-        <div className="absolute right-4 top-12 opacity-[0.03] pointer-events-none text-slate-900 select-none">
-          <Store size={320} />
-        </div>
+      <div className="flex flex-col w-full" style={{ gap: 24 }}>
 
         {/* ─── Hero / Personalized Welcome Banner ─── */}
         <motion.div
@@ -121,50 +280,54 @@ export default function OwnerDashboard() {
           animate="visible"
           variants={fadeUp}
           custom={0}
-          className="w-full rounded-xl border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white px-6 sm:px-8 py-6 sm:py-7 shadow-lg relative overflow-hidden shrink-0"
+          className="w-full border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white shadow-lg relative overflow-hidden shrink-0"
+          style={{ borderRadius: 20, padding: 32 }}
         >
           {/* Ambient background glow */}
           <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
           <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between" style={{ gap: 32, minHeight: 132 }}>
+            <div style={{ maxWidth: 700 }}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md" style={{ padding: "6px 14px" }}>
                 <Sparkles size={13} className="text-emerald-400 animate-pulse" />
                 <span>SafeBite Business Owner Portal</span>
               </div>
-              
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+
+              <h1 className="text-white" style={{ fontSize: 36, fontWeight: 700, lineHeight: "44px", letterSpacing: "-0.02em", marginTop: 16 }}>
                 Welcome back, {ownerName}
               </h1>
-              
-              <p className="text-sm text-emerald-100/90 font-normal leading-relaxed">
-                You are currently managing <span className="font-bold text-white underline decoration-emerald-400 underline-offset-4">{restaurants.length} restaurant establishment{restaurants.length === 1 ? "" : "s"}</span>. Track compliance certificates, audit ratings, and customer feedback seamlessly.
+
+              <p className="text-emerald-100/90 font-normal" style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
+                You are currently managing{" "}
+                <span className="font-bold text-white underline decoration-emerald-400 underline-offset-4">{restaurants.length} restaurant establishment{restaurants.length === 1 ? "" : "s"}</span>. Track compliance certificates, audit ratings, and customer feedback seamlessly.
               </p>
 
-              {/* Quick Actions in Hero */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center" style={{ gap: 12, marginTop: 24 }}>
                 <button
                   onClick={() => navigate("/owner/restaurants?add=true")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-lg transition-all shadow-md shadow-emerald-950/40 cursor-pointer border border-emerald-400/30 active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-emerald-950/40 hover:shadow-xl cursor-pointer border border-emerald-400/30"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <Plus size={16} strokeWidth={2.5} />
+                  <Plus size={17} strokeWidth={2.5} />
                   <span>Add New Restaurant</span>
                 </button>
 
                 <button
                   onClick={() => navigate("/owner/certificates")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm rounded-lg transition-all backdrop-blur-md border border-white/20 cursor-pointer active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 text-white font-semibold text-sm transition-all duration-200 backdrop-blur-md border border-white/25 cursor-pointer"
+                  style={{ height: 44, padding: "0 20px", borderRadius: 12 }}
                 >
-                  <Upload size={16} strokeWidth={2} />
+                  <Upload size={17} strokeWidth={2} />
                   <span>Upload Certificate</span>
                 </button>
               </div>
             </div>
 
-            {/* Right: Portfolio Summary Badge */}
+            {/* Right: Portfolio Health Badge */}
             <div className="hidden lg:block shrink-0">
-              <div className="w-64 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 p-3.5 text-white shadow-md space-y-2.5">
+              <div className="bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-md space-y-2.5" style={{ width: 340, padding: 20, borderRadius: 16 }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
@@ -177,7 +340,7 @@ export default function OwnerDashboard() {
                     Verified
                   </span>
                 </div>
-                
+
                 <div className="flex items-baseline justify-between pt-0.5">
                   <div>
                     <p className="text-xl font-black text-white">{avgSafetyScore}/100</p>
@@ -191,7 +354,7 @@ export default function OwnerDashboard() {
                 </div>
 
                 <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-400 h-full rounded-full shadow-sm" style={{ width: `${Math.min(100, Math.max(0, Number(avgSafetyScore) || 80))}%` }} />
+                  <div className="bg-emerald-400 h-full rounded-full shadow-sm" style={{ width: `${scorePct}%` }} />
                 </div>
               </div>
             </div>
@@ -200,436 +363,207 @@ export default function OwnerDashboard() {
 
         {/* ─── Statistic Cards Row ─── */}
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0" style={{ gap: 20 }}>
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
+              <Skeleton key={i} className="h-[130px] rounded-[18px]" />
             ))}
           </div>
         ) : (
           <motion.div
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            className="grid sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+            style={{ gap: 20 }}
             initial="hidden"
             animate="visible"
           >
-            {/* Stat 1: Managed Restaurants */}
-            <motion.div
-              variants={fadeUp}
-              custom={1}
-              whileHover={{ y: -2 }}
+            <StatCard
+              color="emerald" custom={1}
+              label="My Restaurants" value={restaurants.length}
+              icon={<Store size={20} strokeWidth={2} />}
+              chipIcon={<Building2 size={12} />} chipLabel="Active locations"
               onClick={() => navigate("/owner/restaurants")}
-              className="group rounded-xl border-t-4 border-t-emerald-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-emerald-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-emerald-800/80 uppercase tracking-wider truncate">
-                    My Restaurants
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {restaurants.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <Store size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-100/70 text-emerald-800 text-[11px] font-semibold">
-                  <Building2 size={12} className="text-emerald-600" />
-                  Active business locations
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 2: Compliance Certificates */}
-            <motion.div
-              variants={fadeUp}
-              custom={2}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="blue" custom={2}
+              label="Certificates" value={certificates.length}
+              icon={<FileCheck size={20} strokeWidth={2} />}
+              chipIcon={<FileCheck size={12} />}
+              chipLabel={expiringCertificates > 0 ? `${expiringCertificates} expiring soon` : "All permits active"}
               onClick={() => navigate("/owner/certificates")}
-              className="group rounded-xl border-t-4 border-t-blue-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-blue-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-blue-800/80 uppercase tracking-wider truncate">
-                    Certificates
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {certificates.length}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <FileCheck size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold ${expiringCertificates > 0 ? "bg-amber-100/70 text-amber-800" : "bg-blue-100/70 text-blue-800"}`}>
-                  <FileCheck size={12} />
-                  {expiringCertificates > 0 ? `${expiringCertificates} expiring soon` : "All permits active"}
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 3: Customer Complaints */}
-            <motion.div
-              variants={fadeUp}
-              custom={3}
-              whileHover={{ y: -2 }}
+            />
+            <StatCard
+              color="amber" custom={3}
+              label="Pending Complaints" value={pendingComplaints}
+              icon={<AlertTriangle size={20} strokeWidth={2} />}
+              chipIcon={<Clock size={12} />} chipLabel="Requires review"
               onClick={() => navigate("/owner/complaints")}
-              className="group rounded-xl border-t-4 border-t-amber-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-amber-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-amber-800/80 uppercase tracking-wider truncate">
-                    Pending Complaints
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {pendingComplaints}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <AlertTriangle size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-100/70 text-amber-800 text-[11px] font-semibold">
-                  <Clock size={12} className="text-amber-600" />
-                  Requires review
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Stat 4: Average Safety Score */}
-            <motion.div
-              variants={fadeUp}
-              custom={4}
-              whileHover={{ y: -2 }}
-              className="group rounded-xl border-t-4 border-t-purple-500 border-x border-b border-slate-200/90 bg-gradient-to-br from-purple-500/[0.04] via-white to-white p-5 shadow-xs hover:shadow-md hover:border-purple-400 transition-all duration-200 flex flex-col justify-between gap-4 h-full"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-extrabold text-purple-800/80 uppercase tracking-wider truncate">
-                    Avg Safety Score
-                  </p>
-                  <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display mt-1">
-                    {avgSafetyScore}
-                  </h3>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-all duration-200 shadow-xs">
-                  <ShieldCheck size={20} strokeWidth={2} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-purple-100/70 text-purple-800 text-[11px] font-semibold">
-                  <Award size={12} className="text-purple-600" />
-                  Portfolio Rating
-                </span>
-              </div>
-            </motion.div>
+            />
+            <StatCard
+              color="purple" custom={4}
+              label="Avg Safety Score" value={avgSafetyScore}
+              icon={<ShieldCheck size={20} strokeWidth={2} />}
+              chipIcon={<Award size={12} />} chipLabel="Portfolio rating"
+            />
           </motion.div>
         )}
 
-        {/* ─── Section: Quick Actions Grid ─── */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
+        {/* ─── Section 1: Owner Quick Actions ─── */}
+        <Section
           custom={5}
-          className="w-full rounded-xl border border-slate-200/80 bg-white/80 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4"
+          icon={<Sparkles size={18} />} iconColor="#10b981"
+          title="Owner Quick Actions"
+          right={<span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#94a3b8" }}>Fast Access</span>}
         >
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                <Sparkles size={16} />
-              </div>
-              Owner Quick Actions
-            </h2>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fast Access</span>
-          </div>
-
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Card 1 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 20 }}>
+            <QuickAction
+              icon={<Plus size={20} strokeWidth={2.5} />} iconColor="#10b981"
+              title="Add Restaurant" description="Register a new location"
               onClick={() => navigate("/owner/restaurants?add=true")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                  <Plus size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors truncate">
-                    Add Restaurant
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Register a new location
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 2 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<Upload size={18} strokeWidth={2.5} />} iconColor="#2563eb"
+              title="Upload Certificate" description="Submit health & safety permits"
               onClick={() => navigate("/owner/certificates")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
-                  <Upload size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                    Upload Certificate
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Submit health & safety permits
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 3 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<AlertTriangle size={18} strokeWidth={2.5} />} iconColor="#d97706"
+              title="Review Complaints" description="Address customer feedback"
               onClick={() => navigate("/owner/complaints")}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-all duration-200">
-                  <AlertTriangle size={18} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
-                    Review Complaints
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Address customer feedback
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-amber-50 group-hover:text-amber-600 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
-
-            {/* Card 4 */}
-            <motion.div
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.99 }}
+            />
+            <QuickAction
+              icon={<RefreshCw size={18} strokeWidth={2.5} className={refreshing ? "animate-spin" : ""} />} iconColor="#64748b"
+              title="Refresh Dashboard" description="Sync latest records"
               onClick={() => fetchData(true)}
-              className="group rounded-lg border border-slate-200/90 bg-white p-4 shadow-xs hover:shadow-md hover:border-slate-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0 group-hover:bg-slate-800 group-hover:text-white transition-all duration-200">
-                  <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-slate-800 transition-colors truncate">
-                    Refresh Dashboard
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
-                    Sync latest records
-                  </p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-slate-200 group-hover:text-slate-900 group-hover:translate-x-1 transition-all duration-200">
-                <ArrowRight size={14} />
-              </div>
-            </motion.div>
+            />
           </div>
-        </motion.div>
+        </Section>
 
-        {/* ─── Grid: Recent Restaurants & Recent Complaints ─── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          
-          {/* Restaurants Container */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
+        {/* ─── Sections 2 & 3: Establishments + Complaints (side by side) ─── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch" style={{ gap: 24 }}>
+
+          {/* ─── Section 2: My Managed Establishments ─── */}
+          <Section
             custom={6}
-            className="w-full rounded-xl border border-emerald-500/15 bg-gradient-to-b from-emerald-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4 flex flex-col justify-between"
+            icon={<Store size={18} />} iconColor="#10b981"
+            title="My Managed Establishments"
+            subtitle="Active restaurants in your account portfolio"
+            right={<ViewAllButton color="#059669" onClick={() => navigate("/owner/restaurants")} />}
           >
-            <div>
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600">
-                      <Store size={16} />
-                    </div>
-                    My Managed Establishments
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Active restaurants in your account portfolio
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate("/owner/restaurants")}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-emerald-50"
-                >
-                  <span>View all</span>
-                  <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </button>
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
               </div>
-
-              <div className="mt-4">
-                {loading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-16 rounded-lg" />
-                    <Skeleton className="h-16 rounded-lg" />
-                  </div>
-                ) : restaurants.length === 0 ? (
-                  <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Store size={24} />
-                    </div>
-                    <div className="space-y-1 max-w-sm">
-                      <h3 className="text-sm font-bold text-slate-900">No restaurants added yet</h3>
-                      <p className="text-xs text-slate-500 font-medium">
-                        Add your first establishment to start tracking safety scores and audits.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate("/owner/restaurants?add=true")}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-all shadow-xs active:scale-95 cursor-pointer mt-1"
-                    >
-                      <Plus size={14} />
-                      <span>Add First Restaurant</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {restaurants.slice(0, 5).map((r) => (
-                      <div
-                        key={r.id}
-                        onClick={() => navigate(`/restaurant/${r.id}`)}
-                        className="group rounded-lg border border-slate-200/90 bg-white p-3.5 hover:shadow-md hover:border-emerald-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-                      >
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                            <Store size={18} strokeWidth={2} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                              {r.name}
-                            </p>
-                            <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
-                              {r.address || (r as any).city || "Verified Establishment"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          <StatusBadge status={(r as any).status || "pending"} />
-                          {r.safety_score != null && (
-                            <SafetyScoreBadge score={r.safety_score} />
-                          )}
-                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
-                            <ChevronRight size={14} />
-                          </div>
-                        </div>
+            ) : restaurants.length === 0 ? (
+              <EmptyState
+                icon={<Store size={26} />} iconColor="#10b981"
+                title="No restaurants added yet"
+                description="Add your first establishment to start tracking safety scores and audits."
+                button={
+                  <button
+                    onClick={() => navigate("/owner/restaurants?add=true")}
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all duration-200 cursor-pointer"
+                    style={{ height: 44, padding: "0 20px", borderRadius: 12, boxShadow: SHADOW_REST }}
+                  >
+                    <Plus size={16} />
+                    <span>Add First Restaurant</span>
+                  </button>
+                }
+              />
+            ) : (
+              <div className="space-y-3">
+                {restaurants.slice(0, 5).map((r) => (
+                  <div
+                    key={r.id}
+                    onClick={() => navigate(`/restaurant/${r.id}`)}
+                    className="group transition-shadow duration-200 cursor-pointer flex items-center justify-between gap-3"
+                    style={{ padding: 16, borderRadius: 12, border: CARD_BORDER, background: "#fff" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Store size={16} strokeWidth={2} />
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+                      <div className="min-w-0">
+                        <p className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
+                          {r.name}
+                        </p>
+                        <p className="truncate" style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>
+                          {r.address || (r as any).city || "Verified Establishment"}
+                        </p>
+                      </div>
+                    </div>
 
-          {/* Recent Complaints Container */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <StatusBadge status={(r as any).status || "pending"} />
+                      {r.safety_score != null && (
+                        <SafetyScoreBadge score={r.safety_score} />
+                      )}
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
+                        <ChevronRight size={14} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+
+          {/* ─── Section 3: Customer Feedback & Complaints ─── */}
+          <Section
             custom={7}
-            className="w-full rounded-xl border border-amber-500/15 bg-gradient-to-b from-amber-500/[0.02] to-white/70 backdrop-blur-xs p-5 sm:p-6 shadow-xs space-y-4 flex flex-col justify-between"
+            icon={<AlertTriangle size={18} />} iconColor="#d97706"
+            title="Customer Feedback & Complaints"
+            subtitle="Reported incidents logged against your establishments"
+            right={<ViewAllButton color="#d97706" onClick={() => navigate("/owner/complaints")} />}
           >
-            <div>
-              <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80">
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <div className="p-1 rounded-md bg-amber-500/10 text-amber-600">
-                      <AlertTriangle size={16} />
-                    </div>
-                    Customer Feedback & Complaints
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Reported incidents logged against your establishments
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate("/owner/complaints")}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer group px-2.5 py-1 rounded hover:bg-amber-50"
-                >
-                  <span>View all</span>
-                  <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </button>
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
               </div>
-
-              <div className="mt-4">
-                {loading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-16 rounded-lg" />
-                    <Skeleton className="h-16 rounded-lg" />
-                  </div>
-                ) : complaints.length === 0 ? (
-                  <div className="rounded-lg border border-slate-200/80 bg-white px-6 py-8 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <CheckCircle2 size={24} />
-                    </div>
-                    <div className="space-y-1 max-w-sm">
-                      <h3 className="text-sm font-bold text-slate-900">Zero active complaints!</h3>
-                      <p className="text-xs text-slate-500 font-medium">
-                        All your establishments maintain excellent health & sanitation standards.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {complaints.slice(0, 5).map((c) => (
-                      <div
-                        key={c.id}
-                        onClick={() => navigate("/owner/complaints")}
-                        className="group rounded-lg border border-slate-200/90 bg-white p-3.5 hover:shadow-md hover:border-amber-400 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
-                            {c.title ?? c.description}
-                          </p>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 font-medium">
-                            <span>{c.restaurant_name ?? "Establishment"}</span>
-                            <span>&middot;</span>
-                            <span>
-                              {new Date(
-                                c.created_at ?? (c as any).timestamp ?? ""
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 shrink-0">
-                          <StatusBadge status={c.status ?? "pending"} />
-                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center group-hover:bg-amber-50 group-hover:text-amber-600 transition-all">
-                            <ChevronRight size={14} />
-                          </div>
-                        </div>
+            ) : complaints.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 size={26} />} iconColor="#10b981"
+                title="Zero active complaints!"
+                description="All your establishments maintain excellent health & sanitation standards."
+              />
+            ) : (
+              <div className="space-y-3">
+                {complaints.slice(0, 5).map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => navigate("/owner/complaints")}
+                    className="group transition-shadow duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    style={{ padding: 16, borderRadius: 12, border: CARD_BORDER, background: "#fff" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                        <AlertTriangle size={16} />
                       </div>
-                    ))}
+                      <div className="min-w-0">
+                        <h4 className="truncate" style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
+                          {c.title ?? c.description}
+                        </h4>
+                        <p className="truncate" style={{ fontSize: 14, color: "#64748b", marginTop: 2 }}>
+                          {c.restaurant_name ?? "Establishment"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                      <StatusBadge status={c.status ?? "pending"} />
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
+                        <Clock size={12} />
+                        {new Date(c.created_at ?? (c as any).timestamp ?? "").toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
-          </motion.div>
+            )}
+          </Section>
 
         </div>
 
@@ -637,4 +571,3 @@ export default function OwnerDashboard() {
     </DashboardLayout>
   );
 }
-

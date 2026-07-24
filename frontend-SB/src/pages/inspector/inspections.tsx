@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,26 +16,17 @@ import {
   Loader2,
   StickyNote,
   AlertTriangle,
-  Building2,
-  ArrowRight,
-  Filter,
-  Sparkles,
-  ClipboardCheck,
-  ChevronRight,
   ShieldCheck,
   Eye,
 } from "lucide-react";
 import DashboardLayout from "@/layouts/dashboard_layout";
 import StatusBadge from "@/components/common/status-badge";
 import SafetyScoreBadge from "@/components/common/safety-score";
-import EmptyState from "@/components/common/empty-state";
 import { useToast } from "@/components/common/toast";
 import Button from "@/components/ui/button";
-import Card, { CardContent } from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Textarea from "@/components/ui/textarea";
 import Dialog, { DialogFooter } from "@/components/ui/dialog";
-import Badge from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
 import {
   getInspections,
@@ -60,12 +52,12 @@ type CompleteFormData = z.infer<typeof completeSchema>;
 
 type StatusFilter = "all" | "scheduled" | "in_progress" | "completed" | "cancelled";
 
-const statusFilters: { value: StatusFilter; label: string; icon: React.ElementType }[] = [
-  { value: "all", label: "All Inspections", icon: FileSearch },
-  { value: "scheduled", label: "Scheduled", icon: Calendar },
-  { value: "in_progress", label: "In Progress", icon: Clock },
-  { value: "completed", label: "Completed", icon: CheckCircle2 },
-  { value: "cancelled", label: "Cancelled", icon: XCircle },
+const statusFilters: { value: StatusFilter; label: string; icon: ElementType; active: string }[] = [
+  { value: "all", label: "All Inspections", icon: FileSearch, active: "#059669" },
+  { value: "scheduled", label: "Scheduled", icon: Calendar, active: "#2563eb" },
+  { value: "in_progress", label: "In Progress", icon: Clock, active: "#d97706" },
+  { value: "completed", label: "Completed", icon: CheckCircle2, active: "#059669" },
+  { value: "cancelled", label: "Cancelled", icon: XCircle, active: "#64748b" },
 ];
 
 const containerVariants = {
@@ -77,6 +69,57 @@ const itemVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0 },
 };
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
+const CARD_BORDER = "1px solid rgba(15,23,42,0.08)";
+const SHADOW_REST = "0 2px 8px rgba(15,23,42,0.05)";
+const SHADOW_HOVER = "0 8px 24px rgba(15,23,42,0.08)";
+
+const FIELD_STYLE: CSSProperties = {
+  width: "100%",
+  borderRadius: 12,
+  border: CARD_BORDER,
+  fontSize: 15,
+  color: "#0f172a",
+  background: "#fff",
+};
+const FIELD_CLASS = "outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10";
+
+type StatColor = "blue" | "amber" | "emerald" | "rose";
+const STAT_STYLES: Record<StatColor, { top: string; iconBg: string; iconText: string; iconBorder: string }> = {
+  blue:    { top: "#3b82f6", iconBg: "rgba(59,130,246,0.10)", iconText: "#2563eb", iconBorder: "rgba(59,130,246,0.20)" },
+  amber:   { top: "#f59e0b", iconBg: "rgba(245,158,11,0.10)", iconText: "#d97706", iconBorder: "rgba(245,158,11,0.22)" },
+  emerald: { top: "#10b981", iconBg: "rgba(16,185,129,0.10)", iconText: "#059669", iconBorder: "rgba(16,185,129,0.20)" },
+  rose:    { top: "#f43f5e", iconBg: "rgba(244,63,94,0.10)", iconText: "#e11d48", iconBorder: "rgba(244,63,94,0.20)" },
+};
+
+function StatCard({ color, label, value, icon }: { color: StatColor; label: string; value: number; icon: ReactNode }) {
+  const s = STAT_STYLES[color];
+  return (
+    <div
+      className="bg-white transition-shadow duration-200 flex flex-col justify-between"
+      style={{ minHeight: 120, borderRadius: 18, padding: 20, border: CARD_BORDER, borderTop: `3px solid ${s.top}`, boxShadow: SHADOW_REST }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+    >
+      <div className="flex items-start justify-between" style={{ gap: 12 }}>
+        <p className="truncate" style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#64748b" }}>
+          {label}
+        </p>
+        <div className="flex items-center justify-center shrink-0" style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, color: s.iconText, border: `1px solid ${s.iconBorder}` }}>
+          {icon}
+        </div>
+      </div>
+      <h3 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, color: "#0f172a", letterSpacing: "-0.02em" }}>
+        {value}
+      </h3>
+    </div>
+  );
+}
 
 export default function InspectionsPage() {
   const navigate = useNavigate();
@@ -204,79 +247,75 @@ export default function InspectionsPage() {
 
   return (
     <DashboardLayout title="Inspections">
-      <div className="space-y-8 pb-12">
-        {/* Header Hero Section */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 p-6 sm:p-8 text-white shadow-xl border border-emerald-800/30">
-          <div className="absolute right-0 top-0 -mt-10 -mr-10 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+      <div className="flex flex-col w-full pb-12" style={{ gap: 24 }}>
+        {/* Hero */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="w-full border border-emerald-500/25 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white shadow-lg relative overflow-hidden shrink-0"
+          style={{ borderRadius: 20, padding: 32 }}
+        >
+          <div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-1/3 w-64 h-64 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none" />
+
           <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
-                <ShieldCheck className="h-3.5 w-3.5" /> Inspector Operations Control
+            <div style={{ maxWidth: 760 }}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md" style={{ padding: "6px 14px" }}>
+                <ShieldCheck size={13} className="text-emerald-400" />
+                <span>Inspector Operations Control</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Inspection Workspace</h1>
-              <p className="text-sm text-emerald-100/80 max-w-xl">
+              <h1 className="text-white" style={{ fontSize: 36, fontWeight: 700, lineHeight: "44px", letterSpacing: "-0.02em", marginTop: 16 }}>
+                Inspection Workspace
+              </h1>
+              <p className="text-emerald-100/90 font-normal" style={{ fontSize: 16, lineHeight: 1.6, marginTop: 8 }}>
                 Schedule, track, and complete restaurant health inspections with real-time audit logs and safety compliance scores.
               </p>
             </div>
 
             <Button
               onClick={() => setCreateOpen(true)}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-2xl shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 shrink-0"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 shrink-0"
             >
-              <Plus className="h-5 w-5 stroke-[2.5]" />
+              <Plus className="mr-2 h-4 w-4 stroke-[2.5]" />
               <span>Schedule Inspection</span>
             </Button>
           </div>
+        </motion.div>
 
-          {/* Quick Summary KPIs */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 pt-6 border-t border-emerald-800/40">
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10">
-              <div className="flex items-center gap-2 text-xs font-medium text-emerald-300/80">
-                <Calendar className="h-4 w-4 text-emerald-400" />
-                <span>Scheduled</span>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-white">{scheduledCount}</div>
-            </div>
+        {/* Summary metrics */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="grid sm:grid-cols-2 xl:grid-cols-4"
+          style={{ gap: 20 }}
+        >
+          <StatCard color="blue" label="Scheduled" value={scheduledCount} icon={<Calendar size={20} strokeWidth={2} />} />
+          <StatCard color="amber" label="In Progress" value={inProgressCount} icon={<Clock size={20} strokeWidth={2} />} />
+          <StatCard color="emerald" label="Completed" value={completedCount} icon={<CheckCircle2 size={20} strokeWidth={2} />} />
+          <StatCard color="rose" label="Overdue Alerts" value={overdueCount} icon={<AlertTriangle size={20} strokeWidth={2} />} />
+        </motion.div>
 
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10">
-              <div className="flex items-center gap-2 text-xs font-medium text-amber-300/80">
-                <Clock className="h-4 w-4 text-amber-400" />
-                <span>In Progress</span>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-white">{inProgressCount}</div>
-            </div>
-
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10">
-              <div className="flex items-center gap-2 text-xs font-medium text-emerald-300/80">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>Completed</span>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-white">{completedCount}</div>
-            </div>
-
-            <div className="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10">
-              <div className="flex items-center gap-2 text-xs font-medium text-rose-300/80">
-                <AlertTriangle className="h-4 w-4 text-rose-400" />
-                <span>Overdue Alerts</span>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-white">{overdueCount}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Controls & Search Bar */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
+        {/* Search + filters */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+        >
+          <div className="relative w-full lg:max-w-md">
+            <Search size={17} className="absolute top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" style={{ left: 16 }} />
+            <input
               placeholder="Search by restaurant name or inspection notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2.5 rounded-2xl border-slate-200 bg-white shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 text-slate-900"
+              className={`bg-white ${FIELD_CLASS}`}
+              style={{ ...FIELD_STYLE, height: 44, paddingLeft: 44, paddingRight: 16 }}
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-start lg:justify-end" style={{ gap: 8 }}>
             {statusFilters.map((sf) => {
               const Icon = sf.icon;
               const isActive = statusFilter === sf.value;
@@ -284,19 +323,36 @@ export default function InspectionsPage() {
               return (
                 <button
                   key={sf.value}
+                  type="button"
                   onClick={() => setStatusFilter(sf.value)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm ${
-                    isActive
-                      ? "bg-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.02]"
-                      : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
-                  }`}
+                  className="inline-flex items-center transition-all duration-200 cursor-pointer"
+                  style={{
+                    gap: 8,
+                    height: 40,
+                    padding: "0 12px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: isActive ? `1px solid ${sf.active}` : CARD_BORDER,
+                    background: isActive ? sf.active : "#fff",
+                    color: isActive ? "#fff" : "#475569",
+                    boxShadow: isActive ? SHADOW_REST : "none",
+                  }}
                 >
-                  <Icon className={`h-3.5 w-3.5 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                  <Icon size={14} />
                   <span>{sf.label}</span>
                   <span
-                    className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                      isActive ? "bg-emerald-500 text-slate-950" : "bg-slate-100 text-slate-600"
-                    }`}
+                    className="inline-flex items-center justify-center"
+                    style={{
+                      minWidth: 22,
+                      height: 20,
+                      padding: "0 6px",
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: isActive ? "rgba(255,255,255,0.22)" : "#f1f5f9",
+                      color: isActive ? "#fff" : "#64748b",
+                    }}
                   >
                     {count}
                   </span>
@@ -304,29 +360,38 @@ export default function InspectionsPage() {
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Inspections Cards List */}
+        {/* List / empty */}
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
             ))}
           </div>
         ) : filteredInspections.length === 0 ? (
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-4">
-              <FileSearch className="h-8 w-8" />
+          <div className="w-full bg-white" style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}>
+            <div
+              className="flex flex-col items-center justify-center text-center mx-auto"
+              style={{ minHeight: 280, maxWidth: 500, gap: 16, padding: "40px 24px" }}
+            >
+              <div className="flex items-center justify-center shrink-0" style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(16,185,129,0.10)", color: "#059669" }}>
+                <FileSearch size={26} />
+              </div>
+              <div style={{ maxWidth: 420 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#0f172a" }}>
+                  {searchQuery || statusFilter !== "all" ? "No inspections match criteria" : "No inspections scheduled yet"}
+                </h3>
+                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6, marginTop: 8 }}>
+                  {searchQuery || statusFilter !== "all"
+                    ? "Try adjusting your search terms or inspection status filter."
+                    : "Scheduled inspection records will appear here for audit tracking and completion."}
+                </p>
+              </div>
+              <Button onClick={() => setCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl">
+                <Plus className="mr-2 h-4 w-4" /> Schedule New Inspection
+              </Button>
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No inspections found</h3>
-            <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-              {searchQuery || statusFilter !== "all"
-                ? "No inspection records match your current search query or active filter."
-                : "No inspections have been scheduled yet. Schedule your first inspection to start auditing restaurants."}
-            </p>
-            <Button onClick={() => setCreateOpen(true)} className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl">
-              <Plus className="mr-2 h-4 w-4" /> Schedule New Inspection
-            </Button>
           </div>
         ) : (
           <motion.div
@@ -347,8 +412,13 @@ export default function InspectionsPage() {
                     layout
                     exit={{ opacity: 0, x: -20 }}
                   >
-                    <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-emerald-300">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div
+                      className="group bg-white transition-shadow duration-200"
+                      style={{ borderRadius: 18, border: CARD_BORDER, boxShadow: SHADOW_REST }}
+                      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = SHADOW_HOVER; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = SHADOW_REST; }}
+                    >
+                      <div className="p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         {/* Information Section */}
                         <div className="space-y-2 flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -393,7 +463,7 @@ export default function InspectionsPage() {
                         </div>
 
                         {/* Actions Row */}
-                        <div className="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                        <div className="flex flex-wrap items-center gap-2 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                           {inspection.status === "scheduled" && (
                             <>
                               <Button
